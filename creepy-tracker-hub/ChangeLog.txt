@@ -1,0 +1,21 @@
+# Change Log
+All notable changes to this project will be documented in this file.
+http://keepachangelog.com/
+
+## [Unreleased]
+> BUG: Udp Listen
+> Improved Floor Calibration
+> Support for Kinect v1
+
+## [1.0b2] 2016-02-24
++ Show human bodies on Click
++ UDP Sensor input stream
+- RPC Network
+
+## [1.0b1] 2016-02-22
++ UDP Frame Broadcast
++ Save/Load Calibration
++ Calibration
++ Merge Humans
++ Receive RPC Data
++ Kinect Sensor Client RPC
