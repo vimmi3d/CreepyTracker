@@ -10,6 +10,8 @@ public class Human
     public DateTime timeOfDeath;
     public string seenBySensor;
     private HumanSkeleton skeleton;
+    public Vector3 rightKneeAvg;
+    public Vector3 leftKneeAvg;
     public HumanSkeleton Skeleton
     {
         get { return skeleton; }
