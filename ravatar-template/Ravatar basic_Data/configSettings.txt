@@ -1,0 +1,3 @@
+%Config File created in 2016-12-14 16:10:47
+udp.listenport=55555
+udp.trackerport=33333

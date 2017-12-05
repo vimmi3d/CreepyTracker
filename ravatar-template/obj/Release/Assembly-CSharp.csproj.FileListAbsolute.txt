@@ -1,0 +1,63 @@
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Assembly-CSharp.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Assembly-CSharp.pdb
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEditor.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.Analytics.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.HoloLens.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.Networking.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.PlaymodeTestsRunner.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.UI.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.VR.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Mono.Cecil.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Unity.SerializationLogic.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Unity.DataContract.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\ICSharpCode.NRefactory.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Unity.UNetWeaver.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Unity.CecilTools.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Mono.Cecil.Pdb.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Mono.Cecil.Mdb.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\Assembly-CSharp-firstpass.pdb
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEditor.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.UI.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.Networking.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.PlaymodeTestsRunner.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.Analytics.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.HoloLens.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\Temp\bin\Release\UnityEngine.VR.xml
+C:\Users\rafae\Documents\GitHub\Ravatar Template\obj\Release\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\rafae\Documents\GitHub\Ravatar Template\obj\Release\Assembly-CSharp.dll
+C:\Users\rafae\Documents\GitHub\Ravatar Template\obj\Release\Assembly-CSharp.pdb
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Assembly-CSharp.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Assembly-CSharp.pdb
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\nunit.framework.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEditor.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Analytics.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.HoloLens.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Networking.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.TestRunner.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Timeline.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.UI.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Mono.Cecil.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Unity.SerializationLogic.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Unity.DataContract.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\ExCSS.Unity.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Unity.Legacy.NRefactory.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Unity.UNetWeaver.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Unity.CecilTools.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Mono.Cecil.Pdb.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Mono.Cecil.Mdb.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\Assembly-CSharp-firstpass.pdb
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEditor.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.UI.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Networking.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.TestRunner.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\nunit.framework.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Timeline.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.Analytics.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\Temp\bin\Release\UnityEngine.HoloLens.xml
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\obj\Release\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\obj\Release\Assembly-CSharp.dll
+C:\Users\rafae\Documents\GitHub\Ravatar-Template\obj\Release\Assembly-CSharp.pdb
