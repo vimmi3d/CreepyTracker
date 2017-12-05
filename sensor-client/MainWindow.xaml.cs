@@ -169,13 +169,15 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 
         private int step = 1;
 
-        private List<byte> points = new List<byte>(); // TMA: To store the bytes
-        private byte[] xv, yv, zv; // TMA: To store the 4 bytes of float x, y and z
+        private byte[] depths = new byte[868352]; // TMA: To store the bytes
+        private byte[] colors = new byte[868352];
+            
         private List<Vector4> head_pos = new List<Vector4>(); // TMA: To keep track of the bodies' heads
         private List<Vector4> hand_pos = new List<Vector4>(); // TMA: To keep track of the bodies' hands
         private float radius_head = 0.22f; // TMA: Radius around head where the sampling value is lower than the input
         private float radius_hand = 0.15f; // TMA: Radius around hands where the sampling value is lower than the input
 
+        RVLEncoder depthEncoder;
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -295,11 +297,13 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             // initialize the components (controls) of the window
             this.InitializeComponent();
 
+            depthEncoder = new RVLEncoder();
 
             NetworkConfigFile f = new NetworkConfigFile("network.conf");
             UdpPort = f.Port;
             JointsConfidenceWeight = f.JointConfidenceWeight;
             udpListener = new UdpListener(int.Parse(f.ListenPort));
+            ListenPort = f.ListenPort;
             udpListener.udpRestart();
         }
 
@@ -368,7 +372,21 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             set
             {
                 udpPort = value;
-                portTextBox.Text = udpPort;
+                sendTextBox.Text = udpPort;
+            }
+        }
+
+        public string ListenPort
+        {
+            get
+            {
+                return udpListener.Port.ToString();
+            }
+
+            set
+            {
+                udpListener.Port = udpListener.Port = int.Parse(value); ;
+                reqTextBox.Text = value;
             }
         }
 
@@ -501,7 +519,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 
         private void Reader_MultiSourceFrameArrived(object sender, MultiSourceFrameArrivedEventArgs e)
         {
-            points = new List<byte>(); // TMA: Clean the Array List at each frame
+            Array.Clear(depths, 0, 217088); // rk: clear the array
             if (udpListener.PendingRequests.Count > 0 || udpListener.Clients.Count > 0)
             {
 
@@ -587,79 +605,29 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                 // we got all frames
                 if (multiSourceFrameProcessed && depthFrameProcessed && colorFrameProcessed && bodyIndexFrameProcessed)
                 {
-                    int step = int.Parse(samplingTextBox.Text);
-                    int oldstep = step; // TMA: Save the input sampling. If you want detail, after you get out of the detail zone update the step with this value.
-                    this.coordinateMapper.MapDepthFrameToColorSpace(this.depthFrameData, this.colorPoints);
-                    this.coordinateMapper.MapDepthFrameToCameraSpace(this.depthFrameData, this.cameraPoints);
-
-                    head_pos.Clear(); // TMA: Clear all the heads from previous frame.
-                    hand_pos.Clear(); // TMA: Clear all the hands from previous frame.
-
-                    bool? a = none.IsChecked; // TMA: Is it 'None'?
-                    bool bnone = a != null ? (bool)a : false;
-                    bool bheads = false, bhands = false, bVR = false;
-                    if (!bnone) // TMA: If it isn't:
-                    {
-                        bool? b = heads.IsChecked; //TMA: Is it 'Heads' ?
-                        bheads = b != null ? (bool)b : false;
-                        bool? b2 = hands.IsChecked;
-                        bhands = b2 != null ? (bool)b2 : false;
-                        bool? b3 = vr.IsChecked;
-                        bVR = b3 != null ? (bool)b3 : false;
-
-                        foreach (Body body in bodies)
-                        {
-                            if (body.TrackingId != 0)
-                            {
-                                foreach (Joint j in body.Joints.Values)
-                                {
-                                    if ((bheads || bVR) && j.JointType == JointType.Head) // TMA: If it's 'Heads'
-                                    {
-                                        Vector4 newHead = new Vector4();
-                                        newHead.X = j.Position.X;
-                                        newHead.Y = j.Position.Y;
-                                        newHead.Z = j.Position.Z;
-                                        head_pos.Add(newHead); // TMA: Store in the heads vector
-                                    }
-                                    else if ((bhands || bVR) && (j.JointType == JointType.HandLeft || j.JointType == JointType.HandRight)) // TMA: If it's 'Hands'
-                                    {
-                                        Vector4 newHand = new Vector4();
-                                        newHand.X = j.Position.X;
-                                        newHand.Y = j.Position.Y;
-                                        newHand.Z = j.Position.Z;
-                                        hand_pos.Add(newHand); // TMA: Store in the hands vector
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    int st = bnone ? step : 1;
-                    // loop over each row and column of the depth
-
                   
-                    for (int y = 0; y < depthHeight; y += st)
+                    this.coordinateMapper.MapDepthFrameToColorSpace(this.depthFrameData, this.colorPoints);
+                    int i = 0;
+
+
+                    for (int y = 0; y < depthHeight; y++)
                     {
-                        for (int x = 0; x < depthWidth; x += st)
+                        for (int x = 0; x < depthWidth; x++)
                         {
 
-                            // calculate index into depth array
                             int depthIndex = (y * depthWidth) + x;
-
                             byte player = this.bodyIndexFrameData[depthIndex];
                             bool? c = onlyPlayers.IsChecked;
                             bool val = c != null ? (bool)c : false;
                             // if we're tracking a player for the current pixel, sets its color and alpha to full
+                            bool added = false;
                             if (!val || (val && player != 0xff))
                             {
-
                                 CameraSpacePoint p = this.cameraPoints[depthIndex];
 
                                 // retrieve the depth to color mapping for the current depth pixel
                                 ColorSpacePoint colorPoint = this.colorPoints[depthIndex];
-
                                 byte r = 0; byte g = 0; byte b = 0;
-
                                 // make sure the depth pixel maps to a valid point in color space
                                 int colorX = (int)Math.Floor(colorPoint.X + 0.5);
                                 int colorY = (int)Math.Floor(colorPoint.Y + 0.5);
@@ -671,91 +639,41 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                                     // set source for copy to the color pixel
                                     int displayIndex = depthIndex * this.bytesPerPixel;
 
-                                    b = this.colorFrameData[colorIndex++];
-                                    g = this.colorFrameData[colorIndex++];
-                                    r = this.colorFrameData[colorIndex++];
-
+                                    colors[i++] = this.colorFrameData[colorIndex++];
+                                    colors[i++] = this.colorFrameData[colorIndex++];
+                                    colors[i++] = this.colorFrameData[colorIndex++];
+                                    colors[i++] = 0xf;
+                                    added = true;
                                 }
 
-                                if (!(Double.IsInfinity(p.X)) && !(Double.IsInfinity(p.Y)) && !(Double.IsInfinity(p.Z)))
-                                {
-                                    bool toadd = false;
-                                    bool hires = false;
-                                    // TMA: Update the step if looking for detail
-                                    if (bheads && checkHead(p.X, p.Y, p.Z)) // Check if the point belongs to the head detail zone
-                                    {
-                                        if (checkStep(x, y, step / 2))
-                                        {
-                                            toadd = true;
-                                            hires = true;
-                                        }
-                                    }
-                                    else if (bhands && checkHands(p.X, p.Y, p.Z)) // Check if the point belongs to any hands detail zone
-                                    {
-                                        if (checkStep(x, y, step / 2))
-                                        {
-                                            toadd = true;
-                                            hires = true;
-                                        }
-                                    }
-                                    else if (bVR)
-                                    {
-                                        if (checkHands(p.X, p.Y, p.Z) && checkStep(x, y, step / 2))
-                                        {
-                                            toadd = true;
-                                            hires = true;
-                                        }
-                                        else if (checkHead(p.X, p.Y, p.Z))
-                                        {
-                                            toadd = false;
-                                        }
-                                        else if (checkStep(x, y, step))
-                                        {
-                                            toadd = true;
-                                            hires = false;
-                                        }
-                                    }
-                                    else if (checkStep(x, y, step))
-                                    {
-                                        toadd = true;
-                                        hires = false;
-                                    }
-                                    if (toadd)
-                                    {
-                                        // TMA: Convert the floats to bytes.
-                                        xv = BitConverter.GetBytes(p.X); // x
-                                        yv = BitConverter.GetBytes(p.Y); // y
-                                        zv = BitConverter.GetBytes(p.Z); // z
-                                        // Add the (x,y,z,r,g,b,res) information to the arraylist.
-                                        // This last byte marks the point has being a High Resolution one (value = 1) or Low Resolution (value = 0).
-                                        // This is important in the tracker. Look there in CloudMessage.cs.
-                                        // A point will have 16 bytes:
-                                        // --- 4 bytes for each component of (x, y, z).
-                                        // --- 1 byte per color component.
-                                        // --- 1 byte per detail bool.
-                                        foreach (byte bt in xv) points.Add(bt); // x
-                                        foreach (byte bt in yv) points.Add(bt); // y
-                                        foreach (byte bt in zv) points.Add(bt); // z
-                                        points.Add(r); // r
-                                        points.Add(g); // g
-                                        points.Add(b); // b
-                                        int i = 0;
-                                        if (hires)
-                                            points.Add((byte)1); // Mark as a HighRes point
-                                        else
-                                            points.Add((byte)0); // Mark as a LowRes point
-                                    }
-                                }
+                            }
+                            if (!added)
+                            {
+                                colors[i++] = 0;
+                                colors[i++] = 0;
+                                colors[i++] = 0;
+                                colors[i++] = 0x0;
                             }
                         }
                     }
-                    if (points.Count > 0)
+                    //this.coordinateMapper.MapDepthFrameToCameraSpace(this.depthFrameData, this.cameraPoints);
+                    bool? comp = compressed.IsChecked;
+                    bool compval = comp != null ? (bool)comp : false;
+                    int byt = 0;
+                    if (compval) { 
+                        byt = depthEncoder.CompressRVL(depthFrameData, depths, 217088);
+                    }else {
+                       byt = depthEncoder.CopyDontCompress(depthFrameData, depths, 217088);
+                    }
+                    if (byt > 0)
                     {
                         List<TcpSender> todelete = null;
                         foreach (TcpSender client in udpListener.Clients)
                         {
-                            if (client.Connected) { 
-                                client.sendCloud(points.ToArray(), udpListener.messageCount);
+                            if (client.Connected)
+                            {
+                                client.sendData(depths, udpListener.messageCount, byt, compval);
+                                client.sendData(colors, udpListener.messageCount, colors.Length, compval);
                             }
                             else
                             {
@@ -764,16 +682,16 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                             }
                         }
 
-                        if(todelete != null)
+                        if (todelete != null)
                         {
-                            foreach(TcpSender c in todelete)
+                            foreach (TcpSender c in todelete)
                             {
                                 udpListener.Clients.Remove(c);
                             }
                         }
                         if (udpListener.PendingRequests.Count > 0)
                         {
-                            udpListener.processRequests(points);
+                            udpListener.processRequests(depths, colors, byt,compval);
                         }
 
                         udpListener.messageCount++;
@@ -781,6 +699,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                 }
             }
         }
+
 
         private bool checkStep(int x, int y, int step)
         {
@@ -981,9 +900,9 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 
         private void resetBroadcast()
         {
-            UdpPort = portTextBox.Text;
+            UdpPort = sendTextBox.Text;
             udp.reset(int.Parse(UdpPort));
-            udpListener.Port = int.Parse(UdpPort)+1;
+            ListenPort = reqTextBox.Text;
             udpListener.udpRestart();
             expander.IsExpanded = false;   
         }

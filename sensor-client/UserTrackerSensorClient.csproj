@@ -74,6 +74,7 @@
     <Compile Include="BodiesMessage.cs" />
     <Compile Include="CloudMessage.cs" />
     <Compile Include="NetworkConfigFile.cs" />
+    <Compile Include="RVLEncoder.cs" />
     <Compile Include="Skeleton.cs" />
     <Compile Include="TcpSender.cs" />
     <Compile Include="UdpBroadcast.cs" />

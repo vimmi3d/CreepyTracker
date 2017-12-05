@@ -7,8 +7,8 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 {
     internal class NetworkConfigFile
     {
-        private string _port = "33333";
-        private string _listenPort = "5007";
+        private string _sendport = "5001";
+        private string _listenPort = "5005";
 
         private Dictionary<string, int> _jointConfidenceWeight;
         public Dictionary<string, int> JointConfidenceWeight
@@ -36,7 +36,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 
                     if (s[0] == "udp.port")
                     {
-                        _port = s[1];
+                        _sendport = s[1];
                     }
                     if (s[0] == "udp.listen")
                     {
@@ -50,7 +50,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             }
         }
 
-        public string Port { get { return _port; } internal set { _port = value; } }
+        public string Port { get { return _sendport; } internal set { _sendport = value; } }
         public string ListenPort { get { return _listenPort; } internal set { _listenPort = value; } }
 
     }

@@ -21,7 +21,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
         public TcpSender()
         {
             _connected = false;
-            sendHeaderBuffer = new byte[8];
+            sendHeaderBuffer = new byte[9];
         }
 
         public void connect(string address, int port)
@@ -52,26 +52,31 @@ namespace Microsoft.Samples.Kinect.BodyBasics
         public void write(string line)
         {
             byte[] ba = _encoder.GetBytes(line);
-            this.write(ba);
+            this.write(ba,ba.Length);
         }
 
-        public void sendCloud(byte[] frame, uint messageCount)
+        public void sendData(byte[] frame, uint messageCount, int size,bool compressed)
         {
             byte[] id = BitConverter.GetBytes(messageCount);
-            byte[] count = BitConverter.GetBytes(frame.Length);
+            byte[] count = BitConverter.GetBytes(size);
+            byte[] b = BitConverter.GetBytes(compressed);
+    
             Array.Copy(id, 0, sendHeaderBuffer, 0, 4);
             Array.Copy(count, 0, sendHeaderBuffer, 4, 4);
-            write(sendHeaderBuffer);
-            write(frame);
+            Array.Copy(b, 0, sendHeaderBuffer, 8, 1);
+            write(sendHeaderBuffer,9);
+            write(frame,size);
 
         }
-        public void write(byte[] frame)
+
+
+        public void write(byte[] frame,int size)
         {
             if (_connected)
             {
                 try
                 {
-                    _stream.Write(frame, 0, frame.Length);
+                    _stream.Write(frame, 0,size);
                 }
                 catch(Exception e)
                 {

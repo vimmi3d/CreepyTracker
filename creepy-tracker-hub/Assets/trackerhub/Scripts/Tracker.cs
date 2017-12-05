@@ -351,22 +351,36 @@ public class Tracker : MonoBehaviour
 		_udpBroadcast.removeUnicast (key);
 	}
 
-    //FOR TCP
-    internal void setNewCloud(string KinectID, byte[] data, int size, uint id)
+    ////FOR TCP
+    //internal void setNewCloud(string KinectID, byte[] data, int size, uint id)
+    //{
+
+    //    // tirar o id da mensagem que é um int
+        
+    //    if (Sensors.ContainsKey(KinectID))
+    //    {
+    //        Sensors[KinectID].lastCloud.setPoints(data, 0, id, size);
+    //        Sensors[KinectID].lastCloud.setToView();
+    //    }
+    //}
+
+
+    //FOR TCP DEPTH
+    internal void setNewDepthCloud(string KinectID, byte[] colorData, byte[] depthData, uint id, bool compressed)
     {
 
         // tirar o id da mensagem que é um int
-        
         if (Sensors.ContainsKey(KinectID))
         {
-            Sensors[KinectID].lastCloud.setPoints(data, 0, id, size);
-            Sensors[KinectID].lastCloud.setToView();
+            Sensors[KinectID].lastCloud.show();
+            Sensors[KinectID].lastCloud.setPoints(colorData, depthData, compressed);
+           
         }
     }
 
     internal void setCloudToView(string KinectID)
     {
-        Sensors[KinectID].lastCloud.setToView();
+        Sensors[KinectID].lastCloud.show();
     }
 
     internal void setNewCloud (CloudMessage cloud)
@@ -386,10 +400,10 @@ public class Tracker : MonoBehaviour
         if (Sensors.ContainsKey(KinectId))
         {
             if (pdu[2] == "") {
-                Sensors[KinectId].lastCloud.setToView();
+                Sensors[KinectId].lastCloud.show();
             }
             else { 
-                Sensors[KinectId].lastCloud.setPoints(cloud.receivedBytes,step,id,cloud.receivedBytes.Length);
+//                Sensors[KinectId].lastCloud.setPoints(cloud.receivedBytes,step,id,cloud.receivedBytes.Length);
             }
         }
 	}
@@ -675,13 +689,14 @@ public class Tracker : MonoBehaviour
 	{
 		foreach (Sensor s in _sensors.Values)
         {
-			s.lastCloud.hideFromView ();
+			s.lastCloud.hide ();
 		}
 		UdpClient udp = new UdpClient ();
 		string message = CloudMessage.createRequestMessage (2,Network.player.ipAddress, TrackerProperties.Instance.listenPort); 
 		byte[] data = Encoding.UTF8.GetBytes(message);
 		IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
 		udp.Send(data, data.Length, remoteEndPoint);
+        GetComponent<TcpDepthListener>().closeTcpConnections();
 	}
 
 	public void broadCastCloudRequests (bool continuous)
@@ -691,7 +706,9 @@ public class Tracker : MonoBehaviour
 		byte[] data = Encoding.UTF8.GetBytes (message);
 		IPEndPoint remoteEndPoint = new IPEndPoint (IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
 		udp.Send (data, data.Length, remoteEndPoint);
-	}
+        Debug.Log("Requested clouds to port " + TrackerProperties.Instance.listenPort);
+
+    }
 
     public void processAvatarMessage(AvatarMessage av)
     {
@@ -709,7 +726,7 @@ public class Tracker : MonoBehaviour
         byte[] data2 = Encoding.UTF8.GetBytes(message2);
         IPEndPoint remoteEndPoint2 = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
         udp.Send(data2, data2.Length, remoteEndPoint2);
-        Debug.Log("Forwarded request to clients " + message2);
+        Debug.Log("Forwarded request to clients at port " + TrackerProperties.Instance.sensorListenPort + " " + message2);
     }
 
     public void processSurfaceMessage(SurfaceMessage sm)

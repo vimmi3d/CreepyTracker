@@ -9,7 +9,7 @@ public class Sensor
 
 	public Dictionary<string, SensorBody> bodies;
 
-	public PointCloudSimple lastCloud;
+	public PointCloudDepth lastCloud;
 	private GameObject _sensorGameObject;
 
 	public GameObject SensorGameObject { get { return _sensorGameObject; } }
@@ -89,8 +89,8 @@ public class Sensor
 		cloudobj.transform.localPosition = Vector3.zero;
 		cloudobj.transform.localRotation = Quaternion.identity;
 		cloudobj.transform.localScale = new Vector3 (-1, 1, 1);
-		cloudobj.AddComponent<PointCloudSimple> ();
-		lastCloud = cloudobj.GetComponent<PointCloudSimple> ();
+		cloudobj.AddComponent<PointCloudDepth> ();
+		lastCloud = cloudobj.GetComponent<PointCloudDepth> ();
 	}
 
 	internal Vector3 pointSensorToScene (Vector3 p)

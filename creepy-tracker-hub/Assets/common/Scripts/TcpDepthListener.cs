@@ -1,27 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Threading;
+using System;
 
-public class KinectStream
+public class DepthStream
 {
     private TcpClient _client;
     internal string name;
-    internal byte[] data;
+    internal byte[] colorData;
+    internal byte[] depthData;
+
     internal int size;
-    internal uint lastUpdated;
     internal uint lastID;
     internal bool dirty;
-    public int BUFFER = 4341760;
+    public int BUFFER = 868352;
+    public int DBUFFER = 868352;
+    public bool compressed;
 
-    public KinectStream(TcpClient client)
+    public DepthStream(TcpClient client)
     {
-
-        name = "Unknown Kinect Stream";
+        compressed = false;
+        name = "Depth Kinect Stream";
         _client = client;
-        data = new byte[BUFFER];
+        colorData = new byte[BUFFER];
+        depthData = new byte[DBUFFER];
         dirty = false;
     }
 
@@ -31,20 +35,33 @@ public class KinectStream
     }
 }
 
-public class TcpKinectListener : MonoBehaviour
+
+public class TcpDepthListener : MonoBehaviour
 {
+
+
     public bool showNetworkDetails = true;
 
     private int TcpListeningPort;
     private TcpListener _server;
 
     private bool _running;
-    private List<KinectStream> _kinectStreams;
-    
+
+    private List<DepthStream> _depthStreams;
+
+    byte[] _buffer;
+    byte[] _dbuffer;
+
+
+
     void Start()
     {
+
         //_threads = new List<Thread>();
-        _kinectStreams = new List<KinectStream>();
+        _buffer =   new byte[868352];
+        _dbuffer = new byte[868352];
+
+        _depthStreams = new List<DepthStream>();
 
         TcpListeningPort = TrackerProperties.Instance.listenPort;
         _server = new TcpListener(IPAddress.Any, TcpListeningPort);
@@ -59,29 +76,31 @@ public class TcpKinectListener : MonoBehaviour
 
     void AcceptClients(object o)
     {
+
         while (_running)
         {
             TcpClient newclient = _server.AcceptTcpClient();
             Thread clientThread = new Thread(new ParameterizedThreadStart(clientHandler));
+            Debug.Log("[TCPDepthListener] new stream ");
             //_threads.Add(clientThread);
             clientThread.Start(newclient);
         }
     }
-    
+
+
     void clientHandler(object o)
     {
         int SIZEHELLO = 200;
         TcpClient client = (TcpClient)o;
-        KinectStream kstream = new KinectStream(client);
+        DepthStream kstream = new DepthStream(client);
 
-        _kinectStreams.Add(kstream);
+        _depthStreams.Add(kstream);
 
         using (NetworkStream ns = client.GetStream())
         {
 
             byte[] message = new byte[SIZEHELLO];
             int bytesRead = 0;
-            byte[] buffer = new byte[4341760];
             try
             {
                 bytesRead = ns.Read(message, 0, SIZEHELLO);
@@ -90,16 +109,16 @@ public class TcpKinectListener : MonoBehaviour
             {
                 Debug.Log("Connection Lost from " + kstream.name);
                 client.Close();
-                _kinectStreams.Remove(kstream); ;
+                _depthStreams.Remove(kstream); ;
             }
 
             if (bytesRead == 0)
             {
                 Debug.Log("Connection Lost from " + kstream.name);
                 client.Close();
-                _kinectStreams.Remove(kstream); ;
+                _depthStreams.Remove(kstream); ;
             }
-            
+
             //Login
             string s = System.Text.Encoding.Default.GetString(message);
             string[] l = s.Split('/');
@@ -110,21 +129,23 @@ public class TcpKinectListener : MonoBehaviour
                 Debug.Log("New stream from " + l[1]);
             }
 
+
+            bool colorFrame = false;
             while (_running)
             {
                 try
                 {
-                    bytesRead = ns.Read(message, 0, 8);
+                    bytesRead = ns.Read(message, 0, 9);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.Log(e.Message);
-                    _running = false;
+                    client.Close();
                     break;
                 }
                 if (bytesRead == 0)
                 {
-                    _running = false;
+                    client.Close();
                     break;
                 }
 
@@ -134,15 +155,29 @@ public class TcpKinectListener : MonoBehaviour
                 byte[] sizeb = { message[4], message[5], message[6], message[7] };
                 int size = BitConverter.ToInt32(sizeb, 0);
                 kstream.size = size;
-               
+              
+                if (message[8] == 1)
+                {
+                    kstream.compressed = true;
+                }
+                else
+                {
+                    kstream.compressed = false;
+                }
+
                 while (size > 0)
-                { 
+                {
                     try
+                    {   
+                        if(colorFrame)
+                            bytesRead = ns.Read(_buffer, 0, size);
+                        else
+                            bytesRead = ns.Read(_dbuffer, 0, size);
+                    }
+                    catch (Exception e)
                     {
-                        bytesRead = ns.Read(buffer, 0, size);
-                    }catch(Exception e)
-                    { 
-                        Debug.Log(e.Message);
+                      
+
                         _running = false;
                         break;
                     }
@@ -152,14 +187,26 @@ public class TcpKinectListener : MonoBehaviour
                         break;
                     }
                     //save because can't update from outside main thread
-                   
-                    Array.Copy(buffer, 0, kstream.data, kstream.size - size, bytesRead);
+                    if (colorFrame) {
+                        lock (kstream) {
+                            Array.Copy(_buffer, 0, kstream.colorData, kstream.size - size, bytesRead);
+                        }
+                    }
+                    else {
+                        lock (kstream) { 
+                            Array.Copy(_dbuffer, 0, kstream.depthData, kstream.size - size, bytesRead);
+                        }
+                    }
+
                     size -= bytesRead;
                 }
-                kstream.dirty = true;
+                if (colorFrame) { 
+                    kstream.dirty = true;
+                }
+                colorFrame = !colorFrame;
             }
         }
-       
+
     }
 
     private int convert2BytesToInt(byte b1, byte b2)
@@ -169,11 +216,12 @@ public class TcpKinectListener : MonoBehaviour
 
     public void closeTcpConnections()
     {
-        foreach (KinectStream ks in _kinectStreams)
+        Debug.Log("Close connections");
+        foreach (DepthStream ks in _depthStreams)
         {
             ks.stopStream();
         }
-        _kinectStreams = new List<KinectStream>();
+        _depthStreams = new List<DepthStream>();
     }
 
     void OnApplicationQuit()
@@ -184,11 +232,15 @@ public class TcpKinectListener : MonoBehaviour
 
     void Update()
     {
-        foreach (KinectStream k in _kinectStreams)
+        foreach (DepthStream k in _depthStreams)
         {
-            if (k.dirty) {
-                //gameObject.GetComponent<Tracker>().setNewCloud(k.name, k.data, k.size,k.lastID);
-                k.dirty = false;
+            lock (k) { 
+                if (k.dirty)
+                {
+                    k.dirty = false;
+                    gameObject.GetComponent<Tracker>().
+                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed);
+                }
             }
         }
     }
