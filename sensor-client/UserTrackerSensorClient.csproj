@@ -73,6 +73,7 @@
     </ApplicationDefinition>
     <Compile Include="BodiesMessage.cs" />
     <Compile Include="CloudMessage.cs" />
+    <Compile Include="Compressor.cs" />
     <Compile Include="NetworkConfigFile.cs" />
     <Compile Include="RVLEncoder.cs" />
     <Compile Include="Skeleton.cs" />

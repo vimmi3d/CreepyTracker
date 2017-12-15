@@ -366,14 +366,14 @@ public class Tracker : MonoBehaviour
 
 
     //FOR TCP DEPTH
-    internal void setNewDepthCloud(string KinectID, byte[] colorData, byte[] depthData, uint id, bool compressed)
+    internal void setNewDepthCloud(string KinectID, byte[] colorData, byte[] depthData, uint id, bool compressed,int sizec)
     {
 
         // tirar o id da mensagem que é um int
         if (Sensors.ContainsKey(KinectID))
         {
             Sensors[KinectID].lastCloud.show();
-            Sensors[KinectID].lastCloud.setPoints(colorData, depthData, compressed);
+            Sensors[KinectID].lastCloud.setPoints(colorData, depthData, compressed,sizec);
            
         }
     }

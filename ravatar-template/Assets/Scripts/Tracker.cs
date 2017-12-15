@@ -33,13 +33,13 @@ public class Tracker : MonoBehaviour
 
 
     //FOR TCP DEPTH
-    internal void setNewDepthCloud(string KinectID, byte[] colorData, byte[] depthData, uint id,bool compressed)
+    internal void setNewDepthCloud(string KinectID, byte[] colorData, byte[] depthData, uint id,bool compressed,int sizec)
     {
        
         // tirar o id da mensagem que é um int
         if (_clouds.ContainsKey(KinectID))
         {
-            _clouds[KinectID].setPoints(colorData,depthData,compressed);
+            _clouds[KinectID].setPoints(colorData,depthData,compressed, sizec);
             _clouds[KinectID].show();
         }
     }

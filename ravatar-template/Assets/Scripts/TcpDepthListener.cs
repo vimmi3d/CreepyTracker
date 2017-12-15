@@ -12,7 +12,9 @@ public class DepthStream
     internal byte[] colorData;
     internal byte[] depthData;
 
-    internal int size;
+    internal int sizec;
+    internal int sized;
+
     internal uint lastID;
     internal bool dirty;
     public int BUFFER = 868352;
@@ -153,7 +155,11 @@ public class TcpDepthListener : MonoBehaviour
                 kstream.lastID = id;
                 byte[] sizeb = { message[4], message[5], message[6], message[7] };
                 int size = BitConverter.ToInt32(sizeb, 0);
-                kstream.size = size;
+                if(colorFrame)
+                    kstream.sizec = size;
+                else
+                    kstream.sized = size;
+
                 if (message[8] == 1)
                 {
                     kstream.compressed = true;
@@ -186,12 +192,12 @@ public class TcpDepthListener : MonoBehaviour
                     //save because can't update from outside main thread
                     if (colorFrame) {
                         lock (kstream) {
-                            Array.Copy(_buffer, 0, kstream.colorData, kstream.size - size, bytesRead);
+                            Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                         }
                     }
                     else {
                         lock (kstream) { 
-                            Array.Copy(_dbuffer, 0, kstream.depthData, kstream.size - size, bytesRead);
+                            Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                         }
                     }
 
@@ -234,7 +240,7 @@ public class TcpDepthListener : MonoBehaviour
                 if (k.dirty)
                 {
                     k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed);
+                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec);
                 }
             }
         }

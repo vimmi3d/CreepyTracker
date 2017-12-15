@@ -10,6 +10,7 @@ public class PointCloudDepth : MonoBehaviour
     List<GameObject> _objs;
     Material _mat;
     RVLDecoder _decoder;
+    Decompressor _colorDecoder;
     byte[] _depthBytes;
 
     void Start()
@@ -22,6 +23,7 @@ public class PointCloudDepth : MonoBehaviour
         _mat = Resources.Load("Materials/cloudmatDepth") as Material;
         _depthBytes = new byte[868352];
         _decoder = new RVLDecoder();
+        _colorDecoder = new Decompressor();
         _objs = new List<GameObject>();
         List<Vector3> points = new List<Vector3>();
         List<int> ind = new List<int>();
@@ -89,17 +91,20 @@ public class PointCloudDepth : MonoBehaviour
             a.SetActive(true);
     }
 
-    public void setPoints(byte[] colorBytes, byte[] depthBytes,bool compressed)
+    public void setPoints(byte[] colorBytes, byte[] depthBytes,bool compressed, int sizec)
     {
         if (compressed) { 
             _decoder.DecompressRVL(depthBytes, _depthBytes, 512 * 424);
             _depthTex.LoadRawTextureData(_depthBytes);
-        }else
+            _colorDecoder.Decompress(colorBytes, colorBytes, sizec);
+            _colorTex.LoadRawTextureData(colorBytes);
+        }
+        else
         {
             _depthTex.LoadRawTextureData(depthBytes);
+            _colorTex.LoadRawTextureData(colorBytes);
         }
 
-        _colorTex.LoadRawTextureData(colorBytes);
         _colorTex.Apply();
         _depthTex.Apply();
         MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();       

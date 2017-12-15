@@ -178,6 +178,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
         private float radius_hand = 0.15f; // TMA: Radius around hands where the sampling value is lower than the input
 
         RVLEncoder depthEncoder;
+        Compressor colorEncoder;
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
@@ -298,7 +299,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             this.InitializeComponent();
 
             depthEncoder = new RVLEncoder();
-
+            colorEncoder = new Compressor();
             NetworkConfigFile f = new NetworkConfigFile("network.conf");
             UdpPort = f.Port;
             JointsConfidenceWeight = f.JointConfidenceWeight;
@@ -660,10 +661,13 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                     bool? comp = compressed.IsChecked;
                     bool compval = comp != null ? (bool)comp : false;
                     int byt = 0;
+                    int bytcol = 0;
                     if (compval) { 
                         byt = depthEncoder.CompressRVL(depthFrameData, depths, 217088);
+                        bytcol = colorEncoder.Compress(colors, colors);
                     }else {
                        byt = depthEncoder.CopyDontCompress(depthFrameData, depths, 217088);
+                        bytcol = colors.Length;
                     }
                     if (byt > 0)
                     {
@@ -673,7 +677,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                             if (client.Connected)
                             {
                                 client.sendData(depths, udpListener.messageCount, byt, compval);
-                                client.sendData(colors, udpListener.messageCount, colors.Length, compval);
+                                client.sendData(colors, udpListener.messageCount, bytcol, compval);
                             }
                             else
                             {
