@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{793649FE-F470-3A7A-63A6-8C6FB3930568}</ProjectGuid>
+    <ProjectGuid>{9D8F97CD-7D19-F049-27C0-78E3FDBA5A44}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AssemblyName>Assembly-CSharp-Editor.dll</AssemblyName>
     <FileAlignment>512</FileAlignment>
@@ -117,13 +117,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Ravatar-Template.Plugins.csproj">
-      <Project>{6B559CBA-3004-8C30-BB00-5F676162ED40}</Project>
-      <Name>Ravatar-Template.Plugins</Name>
+    <ProjectReference Include="ravatar-template.Plugins.csproj">
+      <Project>{E777F3FD-6563-F18A-7271-CC298B368F8A}</Project>
+      <Name>ravatar-template.Plugins</Name>
     </ProjectReference>
-    <ProjectReference Include="Ravatar-Template.csproj">
-      <Project>{77D9BFBB-90BF-13C2-6263-C1E236DCADFD}</Project>
-      <Name>Ravatar-Template</Name>
+    <ProjectReference Include="ravatar-template.csproj">
+      <Project>{3649CEBF-1514-D177-D970-E1BBEFBE9AF2}</Project>
+      <Name>ravatar-template</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

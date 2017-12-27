@@ -94,10 +94,13 @@ public class PointCloudDepth : MonoBehaviour
     public void setPoints(byte[] colorBytes, byte[] depthBytes,bool compressed, int sizec)
     {
         if (compressed) { 
-            _decoder.DecompressRVL(depthBytes, _depthBytes, 512 * 424);
-            _depthTex.LoadRawTextureData(_depthBytes);
+            bool ok = _decoder.DecompressRVL(depthBytes, _depthBytes, 512 * 424);
             _colorDecoder.Decompress(colorBytes, colorBytes, sizec);
-            _colorTex.LoadRawTextureData(colorBytes);
+            if (ok)
+            {
+                _depthTex.LoadRawTextureData(_depthBytes);
+                _colorTex.LoadRawTextureData(colorBytes);
+            }            
         }
         else
         {
@@ -115,8 +118,6 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetTexture("_DepthTex", _depthTex); 
 
         }
-        
-       
 
     }
 

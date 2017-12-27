@@ -39,7 +39,7 @@ public class RVLDecoder
         return value;
     }
 
-    public void DecompressRVL(byte[] input, byte[] output, int numPixels)
+    public bool DecompressRVL(byte[] input, byte[] output, int numPixels)
     {
         buffer = pBuffer = 0;
         nibblesWritten = 0;
@@ -53,15 +53,15 @@ public class RVLDecoder
 			for (; zeros != 0; zeros--) {
                 if(k+4 > output.Length)
                 {
-                    Debug.Log("Happy little error");
-                    return;
+                    Debug.Log("Probably sync error");
+                    return false;
                 }
 				output [k++] = 0;
 				output [k++] = 0;
 				output [k++] = 0;
 				output [k++] = 0;
 			}
-            if (numPixelsToDecode == 0) return;
+            if (numPixelsToDecode == 0) return true;
             int nonzeros = DecodeVLE(input); // number of nonzeros
             numPixelsToDecode -= nonzeros;
             for (; nonzeros != 0; nonzeros--)
@@ -71,8 +71,8 @@ public class RVLDecoder
                 current = (previous + delta);
                 if (k + 4 > output.Length)
                 {
-                    Debug.Log("Happy little error");
-                    return;
+                    Debug.Log("Probably sync error");
+                    return false;
                 }
                 output[k++] = (byte)current;
                 output[k++] = (byte)(current >> 8);
@@ -81,6 +81,7 @@ public class RVLDecoder
                 previous = current;
             }
         }
+        return true;
 
     }
 

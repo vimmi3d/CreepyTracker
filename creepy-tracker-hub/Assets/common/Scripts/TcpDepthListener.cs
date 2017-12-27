@@ -50,7 +50,7 @@ public class TcpDepthListener : MonoBehaviour
     private bool _running;
 
     private List<DepthStream> _depthStreams;
-
+    private object myLock;
     byte[] _buffer;
     byte[] _dbuffer;
 
@@ -58,7 +58,7 @@ public class TcpDepthListener : MonoBehaviour
 
     void Start()
     {
-
+        myLock = new object();
         //_threads = new List<Thread>();
         _buffer =   new byte[868352];
         _dbuffer = new byte[868352];
@@ -141,12 +141,12 @@ public class TcpDepthListener : MonoBehaviour
                 catch (Exception e)
                 {
                     Debug.Log(e.Message);
-                    _running = false;
+                   // _running = false;
                     break;
                 }
                 if (bytesRead == 0)
                 {
-                    _running = false;
+                  //  _running = false;
                     break;
                 }
 
@@ -180,23 +180,23 @@ public class TcpDepthListener : MonoBehaviour
                     }
                     catch (Exception e)
                     {
-                        Debug.Log(e.Message);
-                        _running = false;
+                        Debug.Log(e.Message + "color frame " + colorFrame + " size " + size);
+                        //_running = false;
                         break;
                     }
                     if (bytesRead == 0)
                     {
-                        _running = false;
+                       // _running = false;
                         break;
                     }
                     //save because can't update from outside main thread
                     if (colorFrame) {
-                        lock (kstream) {
+                        lock (myLock) {
                             Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                         }
                     }
                     else {
-                        lock (kstream) { 
+                        lock (myLock) { 
                             Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                         }
                     }
@@ -236,7 +236,7 @@ public class TcpDepthListener : MonoBehaviour
     {
         foreach (DepthStream k in _depthStreams)
         {
-            lock (k) { 
+            lock (myLock) { 
                 if (k.dirty)
                 {
                     k.dirty = false;
