@@ -48,18 +48,15 @@
 
                 <CheckBox x:Name="onlyPlayers" Content="Only players" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Margin="24.4,-9,0,0"/>
 
-                <RadioButton x:Name="none" Content="None" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Margin="120.4,-9,0,0" IsChecked="True"/>
-                <RadioButton x:Name="hands" Content="Hands" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Margin="120.4,7,0,0"/>
-                <RadioButton x:Name="heads" Content="Heads" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Margin="120.4,23,0,0"/>
-
                 <Label Grid.Column="0" Content="Send port: " HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-12,0,24"/>
                 <TextBox x:Name="sendTextBox" Grid.Column="1"  HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="50" KeyDown="portTextBox_KeyDown" Margin="0,-10,0,24"/>
 
                 <Button x:Name="button" Grid.Column="2"  Content="Reset" HorizontalAlignment="Right" Margin="0,20,-6,-2" VerticalAlignment="Center" Width="75" Click="button_Click"/>
-                <RadioButton x:Name="vr" Content="VR" Grid.Column="2" HorizontalAlignment="Left" Margin="177,-9,-6,0" VerticalAlignment="Top"/>
                 <Label Grid.Column="0" Content="Req. port: " HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,11,0,1"/>
                 <TextBox x:Name="reqTextBox" Grid.Column="1"  HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Width="50" KeyDown="portTextBox_KeyDown" Margin="0,16,0,-2"/>
                 <CheckBox x:Name="compressed" Content="Compressed" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="2" Margin="24,16,0,0"/>
+                <Label Grid.Column="2" Content="Downscale: " HorizontalAlignment="Center" VerticalAlignment="Center" Margin="134,-14,50,26"/>
+                <TextBox x:Name="scale" Grid.Column="2"  HorizontalAlignment="Left" Height="24" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="50" KeyDown="portTextBox_KeyDown" Margin="202,-12,0,0"/>
 
 
             </Grid>

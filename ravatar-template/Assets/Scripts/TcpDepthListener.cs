@@ -20,6 +20,7 @@ public class DepthStream
     public int BUFFER = 868352;
     public int DBUFFER = 868352;
     public bool compressed;
+    public int scale;
 
     public DepthStream(TcpClient client)
     {
@@ -29,6 +30,7 @@ public class DepthStream
         colorData = new byte[BUFFER];
         depthData = new byte[DBUFFER];
         dirty = false;
+        scale = 1;
     }
 
     public void stopStream()
@@ -50,7 +52,7 @@ public class TcpDepthListener : MonoBehaviour
     private bool _running;
 
     private List<DepthStream> _depthStreams;
-
+    private object myLock;
     byte[] _buffer;
     byte[] _dbuffer;
 
@@ -58,9 +60,9 @@ public class TcpDepthListener : MonoBehaviour
 
     void Start()
     {
-
+        myLock = new object();
         //_threads = new List<Thread>();
-        _buffer =   new byte[868352];
+        _buffer = new byte[868352];
         _dbuffer = new byte[868352];
 
         _depthStreams = new List<DepthStream>();
@@ -136,17 +138,17 @@ public class TcpDepthListener : MonoBehaviour
             {
                 try
                 {
-                    bytesRead = ns.Read(message, 0, 9);
+                    bytesRead = ns.Read(message, 0, 13);
                 }
                 catch (Exception e)
                 {
                     Debug.Log(e.Message);
-                    _running = false;
+                    // _running = false;
                     break;
                 }
                 if (bytesRead == 0)
                 {
-                    _running = false;
+                    //  _running = false;
                     break;
                 }
 
@@ -155,7 +157,7 @@ public class TcpDepthListener : MonoBehaviour
                 kstream.lastID = id;
                 byte[] sizeb = { message[4], message[5], message[6], message[7] };
                 int size = BitConverter.ToInt32(sizeb, 0);
-                if(colorFrame)
+                if (colorFrame)
                     kstream.sizec = size;
                 else
                     kstream.sized = size;
@@ -169,41 +171,49 @@ public class TcpDepthListener : MonoBehaviour
                     kstream.compressed = false;
                 }
 
+                byte[] sc = { message[9], message[10], message[11], message[12] };
+                int scale = BitConverter.ToInt32(sc, 0);
                 while (size > 0)
                 {
                     try
-                    {   
-                        if(colorFrame)
+                    {
+                        if (colorFrame)
                             bytesRead = ns.Read(_buffer, 0, size);
                         else
                             bytesRead = ns.Read(_dbuffer, 0, size);
                     }
                     catch (Exception e)
                     {
-                        Debug.Log(e.Message);
-                        _running = false;
+                        Debug.Log(e.Message + "color frame " + colorFrame + " size " + size);
+                        //_running = false;
                         break;
                     }
                     if (bytesRead == 0)
                     {
-                        _running = false;
+                        // _running = false;
                         break;
                     }
                     //save because can't update from outside main thread
-                    if (colorFrame) {
-                        lock (kstream) {
+                    if (colorFrame)
+                    {
+                        lock (myLock)
+                        {
                             Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                         }
                     }
-                    else {
-                        lock (kstream) { 
+                    else
+                    {
+                        lock (myLock)
+                        {
                             Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                         }
                     }
 
                     size -= bytesRead;
                 }
-                if (colorFrame) { 
+                if (colorFrame)
+                {
+                    kstream.scale = scale;
                     kstream.dirty = true;
                 }
                 colorFrame = !colorFrame;
@@ -236,11 +246,12 @@ public class TcpDepthListener : MonoBehaviour
     {
         foreach (DepthStream k in _depthStreams)
         {
-            lock (k) { 
+            lock (myLock)
+            {
                 if (k.dirty)
                 {
                     k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec);
+                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData, k.depthData, k.lastID, k.compressed, k.sizec, k.scale);
                 }
             }
         }

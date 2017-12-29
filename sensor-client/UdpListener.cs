@@ -67,7 +67,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             
         }
 
-        public void processRequests(byte[] depth,byte[] color,int compressed,bool compression)
+        public void processRequests(byte[] depth,byte[] color,int compressed,bool compression,int iscale)
         {
             List<CloudMessage> todelete = new List<CloudMessage>();
             List<TcpSender> todeleteSenders = null;
@@ -123,8 +123,8 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                     newclient.connect(cm.replyIPAddress.ToString(), cm.port);
                     System.Threading.Thread.Sleep(500);
                     Console.WriteLine("Sent data");
-                    newclient.sendData(depth, messageCount,compressed, compression);
-                    newclient.sendData(color, messageCount,color.Length, compression);
+                    newclient.sendData(depth, messageCount,compressed, compression,iscale);
+                    newclient.sendData(color, messageCount,color.Length, compression,iscale);
                     //newclient.close();
                     todelete.Add(cm);
                 }

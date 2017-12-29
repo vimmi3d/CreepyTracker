@@ -58,7 +58,7 @@ Shader "Custom/Depth Billboard"
 				float _Size;
 				sampler2D _ColorTex;				
 				sampler2D _DepthTex; 
-
+				int _TexScale;
 				float4 _Color; 
 
 				// **************************************************************
@@ -120,7 +120,7 @@ Shader "Custom/Depth Billboard"
 					//float3 right = cross(up, look);
 					
 					
-					float size = (p[0].pos.z*_Size)/351.00146192  ;
+					float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
 					//float size = 0.014;
 					float halfS = 0.5f * size;
 

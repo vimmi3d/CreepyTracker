@@ -20,6 +20,7 @@ public class DepthStream
     public int BUFFER = 868352;
     public int DBUFFER = 868352;
     public bool compressed;
+    public int scale;
 
     public DepthStream(TcpClient client)
     {
@@ -29,6 +30,7 @@ public class DepthStream
         colorData = new byte[BUFFER];
         depthData = new byte[DBUFFER];
         dirty = false;
+        scale = 1;
     }
 
     public void stopStream()
@@ -136,7 +138,7 @@ public class TcpDepthListener : MonoBehaviour
             {
                 try
                 {
-                    bytesRead = ns.Read(message, 0, 9);
+                    bytesRead = ns.Read(message, 0, 13);
                 }
                 catch (Exception e)
                 {
@@ -169,6 +171,8 @@ public class TcpDepthListener : MonoBehaviour
                     kstream.compressed = false;
                 }
 
+                byte[] sc = { message[9], message[10], message[11], message[12] };
+                int scale = BitConverter.ToInt32(sc, 0);
                 while (size > 0)
                 {
                     try
@@ -203,7 +207,8 @@ public class TcpDepthListener : MonoBehaviour
 
                     size -= bytesRead;
                 }
-                if (colorFrame) { 
+                if (colorFrame) {
+                    kstream.scale = scale;
                     kstream.dirty = true;
                 }
                 colorFrame = !colorFrame;
@@ -240,7 +245,7 @@ public class TcpDepthListener : MonoBehaviour
                 if (k.dirty)
                 {
                     k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec);
+                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
                 }
             }
         }

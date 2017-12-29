@@ -53,7 +53,7 @@ public class RVLDecoder
 			for (; zeros != 0; zeros--) {
                 if(k+4 > output.Length)
                 {
-                    Debug.Log("Probably sync error");
+                    Debug.Log("Frame error decompress!");
                     return false;
                 }
 				output [k++] = 0;
@@ -71,7 +71,7 @@ public class RVLDecoder
                 current = (previous + delta);
                 if (k + 4 > output.Length)
                 {
-                    Debug.Log("Probably sync error");
+                    Debug.Log("Frame error decompress!");
                     return false;
                 }
                 output[k++] = (byte)current;

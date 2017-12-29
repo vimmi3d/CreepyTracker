@@ -3,43 +3,43 @@
 public class RVLDecoder
 {
 
-    int word,buffer, pBuffer;
-	int nibblesWritten;
+    int word, buffer, pBuffer;
+    int nibblesWritten;
 
 
     public RVLDecoder()
     {
-        buffer = pBuffer =  nibblesWritten = 0;
-		word = 0;
+        buffer = pBuffer = nibblesWritten = 0;
+        word = 0;
 
     }
 
 
     int DecodeVLE(byte[] input)
     {
-		uint nibble;
+        uint nibble;
 
-		int value = 0, bits = 29;
+        int value = 0, bits = 29;
         do
         {
             if (nibblesWritten == 0)
             {
-				word = (int) (input[pBuffer] | (input[pBuffer + 1] << 8)) | ((input[pBuffer + 2] << 0x10) | (input[pBuffer + 3] << 0x18));  // load word
-				pBuffer += 4;
+                word = (int)(input[pBuffer] | (input[pBuffer + 1] << 8)) | ((input[pBuffer + 2] << 0x10) | (input[pBuffer + 3] << 0x18));  // load word
+                pBuffer += 4;
                 nibblesWritten = 8;
             }
             uint mask = 0xf0000000;
-            nibble = (uint) word & mask;
-			uint nibblebits =  (nibble<<1) >> bits;
-			value = value | (int)nibblebits;
+            nibble = (uint)word & mask;
+            uint nibblebits = (nibble << 1) >> bits;
+            value = value | (int)nibblebits;
             word <<= 4;
             nibblesWritten--;
             bits -= 3;
-		} while ((nibble & 0x80000000) != 0);
+        } while ((nibble & 0x80000000) != 0);
         return value;
     }
 
-    public void DecompressRVL(byte[] input, byte[] output, int numPixels)
+    public bool DecompressRVL(byte[] input, byte[] output, int numPixels)
     {
         buffer = pBuffer = 0;
         nibblesWritten = 0;
@@ -50,18 +50,19 @@ public class RVLDecoder
         {
             int zeros = DecodeVLE(input); // number of zeros
             numPixelsToDecode -= zeros;
-			for (; zeros != 0; zeros--) {
-                if(k+4 > output.Length)
+            for (; zeros != 0; zeros--)
+            {
+                if (k + 4 > output.Length)
                 {
-                    Debug.Log("Happy little error");
-                    return;
+                    Debug.Log("Frame error decompress!");
+                    return false;
                 }
-				output [k++] = 0;
-				output [k++] = 0;
-				output [k++] = 0;
-				output [k++] = 0;
-			}
-            if (numPixelsToDecode == 0) return;
+                output[k++] = 0;
+                output[k++] = 0;
+                output[k++] = 0;
+                output[k++] = 0;
+            }
+            if (numPixelsToDecode == 0) return true;
             int nonzeros = DecodeVLE(input); // number of nonzeros
             numPixelsToDecode -= nonzeros;
             for (; nonzeros != 0; nonzeros--)
@@ -71,8 +72,8 @@ public class RVLDecoder
                 current = (previous + delta);
                 if (k + 4 > output.Length)
                 {
-                    Debug.Log("Happy little error");
-                    return;
+                    Debug.Log("Frame error decompress!");
+                    return false;
                 }
                 output[k++] = (byte)current;
                 output[k++] = (byte)(current >> 8);
@@ -81,6 +82,7 @@ public class RVLDecoder
                 previous = current;
             }
         }
+        return true;
 
     }
 

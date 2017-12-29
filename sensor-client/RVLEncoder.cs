@@ -38,23 +38,52 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             } while (value!=0);
         }
 
-        public int CompressRVL(ushort[] input, byte[] output, int numPixels)
+      
+        public int CompressRVL(ushort[] input, byte[] output,int step,int width,int height)
         {
             pBuffer = 0; // set deles igual ao início
-            int k = 0;
             nibblesWritten = 0;
-            int end = numPixels; //ponteiro para o fim
+            int end = width*height; //ponteiro para o fim
             ushort previous = 0;
-            while (k != end) //enquanto não cheguei no fim do input
+            int k = 0;
+            int w = 0, h = 0;
+            while (k < end) //enquanto não cheguei no fim do input
             {
                 int zeros = 0, nonzeros = 0;
-                for (; (k != end) && input[k]==0; k++, zeros++) ; //contar o número de zeros seguidos (!*input)
+                k = h * width + w;
+                for (; (k < end) && input[k] == 0; zeros++)
+                {
+                    w += step;
+                    if (w >= width)
+                    {
+                        w = 0;
+                        h += step;
+                    }
+                    k = h * width + w;
+                } //contar o número de zeros seguidos (!*input)
                 EncodeVLE(zeros,output); // encode do número of zeros
-                for (int j  = k; (j != end) && input[j]!=0;j++, nonzeros++) ;//contar o número de não zeros seguidos, começando onde a gente tinha parado, 
+                for (int j = k,tempw = w,temph = h; (j < end) && input[j] != 0; nonzeros++)
+                {
+                    tempw += step;
+                    if (tempw >= width)
+                    {
+                        tempw = 0;
+                        temph += step;
+                    }
+                    j = temph * width + tempw;
+                }
+                //contar o número de não zeros seguidos, começando onde a gente tinha parado, 
                 EncodeVLE(nonzeros,output); // number of nonzeros
                 for (int i = 0; i < nonzeros; i++)
                 {
-                    ushort current = input[k++];
+                    ushort current = input[k];
+                    w += step;
+                    if (w >= width)
+                    {
+                        w = 0;
+                        h += step;
+                    }
+                    k = h * width + w;
                     int delta = current - previous;
                     int positive = (delta << 1) ^ (delta >> 31);
                     EncodeVLE(positive,output); // nonzero value
@@ -73,18 +102,21 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             return pBuffer; // num bytes
         }
 
-        public int CopyDontCompress(ushort[] input, byte[] output, int numPixels)
+        public int CopyDontCompress(ushort[] input, byte[] output,int step, int width, int height)
         {
             int k = 0, i = 0;
-            while (i < numPixels) //enquanto não cheguei no fim do input
+
+            for (int y = 0; y < height; y += step)
             {
-                output[k++] = (byte)input[i];
-                output[k++] = (byte)(input[i] >> 8);
-                output[k++] = (byte)(input[i] >> 0x10);
-                output[k++] = (byte)(input[i] >> 0x18);
-                i++;
+                for (int x = 0; x < width; x += step)
+                {
+                    i = y * width + x;
+                    output[k++] = (byte)input[i];
+                    output[k++] = (byte)(input[i] >> 8);
+                    output[k++] = (byte)(input[i] >> 0x10);
+                    output[k++] = (byte)(input[i] >> 0x18);
+                }
             }
-            // pBuffer /= 4;
             return k; // num bytes
         }
     }

@@ -12,33 +12,57 @@ public class PointCloudDepth : MonoBehaviour
     RVLDecoder _decoder;
     Decompressor _colorDecoder;
     byte[] _depthBytes;
-
+    byte[] _colorBytes;
+    int _texScale;
+    int _width;
+    int _height;
     void Start()
     {
-        _colorTex = new Texture2D(512, 424, TextureFormat.BGRA32, false);
-        _depthTex = new Texture2D(512, 424, TextureFormat.BGRA32, false);
-        _colorTex.filterMode = FilterMode.Point;
-        _depthTex.filterMode = FilterMode.Point;
+        _width = 512;
+        _height = 424;
+        _texScale = 1;
+        _objs = null;
+
 
         _mat = Resources.Load("Materials/cloudmatDepth") as Material;
-        _depthBytes = new byte[868352];
+
         _decoder = new RVLDecoder();
         _colorDecoder = new Decompressor();
+
+        initStructs();
+    }
+
+
+    void initStructs()
+    {
+        _colorTex = new Texture2D(_width, _height, TextureFormat.BGRA32, false);
+        _depthTex = new Texture2D(_width, _height, TextureFormat.BGRA32, false);
+        _colorTex.filterMode = FilterMode.Point;
+        _depthTex.filterMode = FilterMode.Point;
+        _depthBytes = new byte[_width * _height * 4];
+        if (_objs != null)
+        {
+            foreach (GameObject g in _objs)
+            {
+                GameObject.Destroy(g);
+            }
+        }
         _objs = new List<GameObject>();
+
         List<Vector3> points = new List<Vector3>();
         List<int> ind = new List<int>();
         int n = 0;
         int i = 0;
-       
-        for (int w = 0; w < 512; w++)
+
+        for (float w = 0; w < _width; w++)
         {
-            for (int h = 0; h < 424; h++)
+            for (float h = 0; h < _height; h++)
             {
-                Vector3 p = new Vector3(w / 512.0f, h / 424.0f, 0);
+                Vector3 p = new Vector3(w / _width, h / _height, 0);
                 points.Add(p);
                 ind.Add(n);
                 n++;
-              
+
                 if (n == 65000)
                 {
                     GameObject a = new GameObject("cloud" + i);
@@ -81,7 +105,7 @@ public class PointCloudDepth : MonoBehaviour
 
     public void hide()
     {
-        foreach(GameObject a in _objs)
+        foreach (GameObject a in _objs)
             a.SetActive(false);
     }
 
@@ -91,32 +115,42 @@ public class PointCloudDepth : MonoBehaviour
             a.SetActive(true);
     }
 
-    public void setPoints(byte[] colorBytes, byte[] depthBytes,bool compressed, int sizec)
+    public void setPoints(byte[] colorBytes, byte[] depthBytes, bool compressed, int sizec, int scale)
     {
-        if (compressed) { 
-            _decoder.DecompressRVL(depthBytes, _depthBytes, 512 * 424);
-            _depthTex.LoadRawTextureData(_depthBytes);
+        if (scale != _texScale)
+        {
+            _texScale = scale;
+            _width = Mathf.CeilToInt(512.0f / scale);
+            _height = Mathf.CeilToInt(424.0f / scale);
+            initStructs();
+        }
+
+        if (compressed)
+        {
+            bool ok = _decoder.DecompressRVL(depthBytes, _depthBytes, _width * _height);
             _colorDecoder.Decompress(colorBytes, colorBytes, sizec);
-            _colorTex.LoadRawTextureData(colorBytes);
+            if (ok)
+            {
+                _depthTex.LoadRawTextureData(_depthBytes);
+                _colorTex.LoadRawTextureData(colorBytes);
+            }
         }
         else
         {
             _depthTex.LoadRawTextureData(depthBytes);
             _colorTex.LoadRawTextureData(colorBytes);
         }
-
         _colorTex.Apply();
         _depthTex.Apply();
-        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();       
-        for (int i = 0;i < 4; i++)
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
         {
             MeshRenderer mr = renderers[i];
+            mr.material.SetInt("_TexScale", _texScale);
             mr.material.SetTexture("_ColorTex", _colorTex);
-            mr.material.SetTexture("_DepthTex", _depthTex); 
+            mr.material.SetTexture("_DepthTex", _depthTex);
 
         }
-        
-       
 
     }
 

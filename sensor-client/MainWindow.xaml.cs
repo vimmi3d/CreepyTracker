@@ -602,6 +602,10 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                         }
                     }
                 }
+                int iscale;
+                if(!Int32.TryParse(this.scale.Text,out iscale)){
+                    iscale = 1;
+                }
 
                 // we got all frames
                 if (multiSourceFrameProcessed && depthFrameProcessed && colorFrameProcessed && bodyIndexFrameProcessed)
@@ -611,9 +615,9 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                     int i = 0;
 
 
-                    for (int y = 0; y < depthHeight; y++)
+                    for (int y = 0; y < depthHeight; y+=iscale)
                     {
-                        for (int x = 0; x < depthWidth; x++)
+                        for (int x = 0; x < depthWidth; x+=iscale)
                         {
 
                             int depthIndex = (y * depthWidth) + x;
@@ -663,11 +667,11 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                     int byt = 0;
                     int bytcol = 0;
                     if (compval) { 
-                        byt = depthEncoder.CompressRVL(depthFrameData, depths, 217088);
-                        bytcol = colorEncoder.Compress(colors, colors);
+                        byt = depthEncoder.CompressRVL(depthFrameData, depths, iscale,depthWidth,depthHeight);
+                        bytcol = colorEncoder.Compress(colors, colors,i);
                     }else {
-                       byt = depthEncoder.CopyDontCompress(depthFrameData, depths, 217088);
-                        bytcol = colors.Length;
+                       byt = depthEncoder.CopyDontCompress(depthFrameData, depths,iscale,depthWidth, depthHeight);
+                       bytcol = i;
                     }
                     if (byt > 0)
                     {
@@ -676,8 +680,8 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                         {
                             if (client.Connected)
                             {
-                                client.sendData(depths, udpListener.messageCount, byt, compval);
-                                client.sendData(colors, udpListener.messageCount, bytcol, compval);
+                                client.sendData(depths, udpListener.messageCount, byt, compval,iscale);
+                                client.sendData(colors, udpListener.messageCount, bytcol, compval,iscale);
                             }
                             else
                             {
@@ -695,7 +699,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
                         }
                         if (udpListener.PendingRequests.Count > 0)
                         {
-                            udpListener.processRequests(depths, colors, byt,compval);
+                            udpListener.processRequests(depths, colors, byt,compval,iscale);
                         }
 
                         udpListener.messageCount++;

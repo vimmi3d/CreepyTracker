@@ -21,7 +21,7 @@ namespace Microsoft.Samples.Kinect.BodyBasics
         public TcpSender()
         {
             _connected = false;
-            sendHeaderBuffer = new byte[9];
+            sendHeaderBuffer = new byte[13];
         }
 
         public void connect(string address, int port)
@@ -55,16 +55,17 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             this.write(ba,ba.Length);
         }
 
-        public void sendData(byte[] frame, uint messageCount, int size,bool compressed)
+        public void sendData(byte[] frame, uint messageCount, int size,bool compressed,int scale)
         {
             byte[] id = BitConverter.GetBytes(messageCount);
             byte[] count = BitConverter.GetBytes(size);
             byte[] b = BitConverter.GetBytes(compressed);
-    
+            byte[] s = BitConverter.GetBytes(scale);
             Array.Copy(id, 0, sendHeaderBuffer, 0, 4);
             Array.Copy(count, 0, sendHeaderBuffer, 4, 4);
             Array.Copy(b, 0, sendHeaderBuffer, 8, 1);
-            write(sendHeaderBuffer,9);
+            Array.Copy(s, 0, sendHeaderBuffer, 9, 4);
+            write(sendHeaderBuffer,13);
             write(frame,size);
 
         }
