@@ -53,8 +53,7 @@ public class TcpDepthListener : MonoBehaviour
 
     private List<DepthStream> _depthStreams;
     private object myLock;
-    byte[] _buffer;
-    byte[] _dbuffer;
+    
 
 
 
@@ -62,8 +61,7 @@ public class TcpDepthListener : MonoBehaviour
     {
         myLock = new object();
         //_threads = new List<Thread>();
-        _buffer =   new byte[868352];
-        _dbuffer = new byte[868352];
+
 
         _depthStreams = new List<DepthStream>();
 
@@ -93,6 +91,8 @@ public class TcpDepthListener : MonoBehaviour
 
     void clientHandler(object o)
     {
+        byte[] _buffer = new byte[868352];
+        byte[] _dbuffer = new byte[868352];
         int SIZEHELLO = 200;
         TcpClient client = (TcpClient)o;
         DepthStream kstream = new DepthStream(client);

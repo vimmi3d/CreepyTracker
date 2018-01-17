@@ -1,7 +1,10 @@
-%Config File created in 2017-06-20 17:05:04
+%Config File created in 2017-12-26 17:27:12
 udp.listenport=5001
 udp.broadcastport=5002
 udp.sensor.listener=5005
 udp.sendinterval=50
 tracker.mergedistance=0.3
 tracker.confidencethreshold=10
+kinect.ZELEONEL=ZELEONEL;-2.675088;1.188043;1.445678;0.05865096;0.8145602;-0.02188234;0.5766914
+kinect.VANESSA=VANESSA;0.01387028;1.180752;3.833547;0.007983786;-0.9991333;-0.03130034;-0.02625056
+kinect.TAVARES=TAVARES;2.464753;1.321191;1.44132;0.06157304;-0.8492936;-0.02141786;0.5238802
