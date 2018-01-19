@@ -53,8 +53,7 @@ public class TcpDepthListener : MonoBehaviour
 
     private List<DepthStream> _depthStreams;
     private object myLock;
-    byte[] _buffer;
-    byte[] _dbuffer;
+    
 
 
 
@@ -62,8 +61,7 @@ public class TcpDepthListener : MonoBehaviour
     {
         myLock = new object();
         //_threads = new List<Thread>();
-        _buffer = new byte[868352];
-        _dbuffer = new byte[868352];
+
 
         _depthStreams = new List<DepthStream>();
 
@@ -93,6 +91,8 @@ public class TcpDepthListener : MonoBehaviour
 
     void clientHandler(object o)
     {
+        byte[] _buffer = new byte[868352];
+        byte[] _dbuffer = new byte[868352];
         int SIZEHELLO = 200;
         TcpClient client = (TcpClient)o;
         DepthStream kstream = new DepthStream(client);
@@ -143,12 +143,12 @@ public class TcpDepthListener : MonoBehaviour
                 catch (Exception e)
                 {
                     Debug.Log(e.Message);
-                    // _running = false;
+                   // _running = false;
                     break;
                 }
                 if (bytesRead == 0)
                 {
-                    //  _running = false;
+                  //  _running = false;
                     break;
                 }
 
@@ -157,7 +157,7 @@ public class TcpDepthListener : MonoBehaviour
                 kstream.lastID = id;
                 byte[] sizeb = { message[4], message[5], message[6], message[7] };
                 int size = BitConverter.ToInt32(sizeb, 0);
-                if (colorFrame)
+                if(colorFrame)
                     kstream.sizec = size;
                 else
                     kstream.sized = size;
@@ -176,8 +176,8 @@ public class TcpDepthListener : MonoBehaviour
                 while (size > 0)
                 {
                     try
-                    {
-                        if (colorFrame)
+                    {   
+                        if(colorFrame)
                             bytesRead = ns.Read(_buffer, 0, size);
                         else
                             bytesRead = ns.Read(_dbuffer, 0, size);
@@ -190,29 +190,24 @@ public class TcpDepthListener : MonoBehaviour
                     }
                     if (bytesRead == 0)
                     {
-                        // _running = false;
+                       // _running = false;
                         break;
                     }
                     //save because can't update from outside main thread
-                    if (colorFrame)
-                    {
-                        lock (myLock)
-                        {
+                    if (colorFrame) {
+                        lock (myLock) {
                             Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                         }
                     }
-                    else
-                    {
-                        lock (myLock)
-                        {
+                    else {
+                        lock (myLock) { 
                             Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                         }
                     }
 
                     size -= bytesRead;
                 }
-                if (colorFrame)
-                {
+                if (colorFrame) {
                     kstream.scale = scale;
                     kstream.dirty = true;
                 }
@@ -246,12 +241,11 @@ public class TcpDepthListener : MonoBehaviour
     {
         foreach (DepthStream k in _depthStreams)
         {
-            lock (myLock)
-            {
+            lock (myLock) { 
                 if (k.dirty)
                 {
                     k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData, k.depthData, k.lastID, k.compressed, k.sizec, k.scale);
+                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
                 }
             }
         }
