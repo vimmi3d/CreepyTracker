@@ -5,28 +5,23 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 {
     public class Compressor
     {
-        MemoryStream _ms;
-        GZipStream _zip;
-        MemoryStream _outStream;
-         
-
-        public Compressor()
-        {
-
-           _outStream = new MemoryStream();
-
-        }
+        
         public int Compress(byte[] buffer, byte[] output,int bytes)
         {
-            _ms = new MemoryStream();
-            _zip = new GZipStream(_ms, CompressionLevel.Fastest, true);
-           
-            _zip.Write(buffer, 0, bytes);
-            _zip.Close();
-            _ms.Position = 0;
-            _ms.Read(output, 0, (int)_ms.Length);
 
-            return (int)_ms.Length;
+            using (MemoryStream memory = new MemoryStream())
+            {
+                using (GZipStream gzip = new GZipStream(memory,
+                    CompressionLevel.Fastest, true))
+                {
+                    gzip.Write(buffer, 0, buffer.Length);
+                }
+                memory.Position = 0;
+                memory.Read(output, 0, (int)memory.Length);
+
+                return (int)memory.Length;
+            }
+            
 
         }
 
