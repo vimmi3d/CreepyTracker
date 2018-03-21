@@ -143,33 +143,32 @@ public class TcpDepthListener : MonoBehaviour
                 catch (Exception e)
                 {
                     Debug.Log(e.Message);
-                   // _running = false;
+                    // _running = false;
                     break;
                 }
                 if (bytesRead == 0)
                 {
-                  //  _running = false;
+                    //  _running = false;
                     break;
                 }
+
 
                 byte[] idb = { message[0], message[1], message[2], message[3] };
                 uint id = BitConverter.ToUInt32(idb, 0);
                 kstream.lastID = id;
                 byte[] sizeb = { message[4], message[5], message[6], message[7] };
                 int size = BitConverter.ToInt32(sizeb, 0);
-                if(colorFrame)
+
+                if (colorFrame)
                     kstream.sizec = size;
                 else
                     kstream.sized = size;
 
                 if (message[8] == 1)
-                {
                     kstream.compressed = true;
-                }
                 else
-                {
                     kstream.compressed = false;
-                }
+                
 
                 byte[] sc = { message[9], message[10], message[11], message[12] };
                 int scale = BitConverter.ToInt32(sc, 0);
@@ -194,15 +193,17 @@ public class TcpDepthListener : MonoBehaviour
                         break;
                     }
                     //save because can't update from outside main thread
-                    if (colorFrame) {
-                        lock (myLock) {
-                            Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
-                        }
+                    if (colorFrame)
+                    {
+                        //Wait till things are processed
+                        while (kstream.dirty) Thread.Sleep(5);
+                        Array.Copy(_buffer, 0, kstream.colorData, kstream.sizec - size, bytesRead);
                     }
                     else {
-                        lock (myLock) { 
-                            Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
-                        }
+
+                        //Wait till things are processed
+                        while (kstream.dirty) Thread.Sleep(5);
+                        Array.Copy(_dbuffer, 0, kstream.depthData, kstream.sized - size, bytesRead);
                     }
 
                     size -= bytesRead;
@@ -241,13 +242,13 @@ public class TcpDepthListener : MonoBehaviour
     {
         foreach (DepthStream k in _depthStreams)
         {
-            lock (myLock) { 
-                if (k.dirty)
-                {
-                    k.dirty = false;
-                    gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
-                }
+            
+            if (k.dirty)
+            {
+                gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
+                k.dirty = false;
             }
+            
         }
     }
 
