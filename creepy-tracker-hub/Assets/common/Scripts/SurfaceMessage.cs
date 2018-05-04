@@ -18,10 +18,10 @@ public class SurfaceMessage
         string res = "SurfaceMessage" + MessageSeparators.L0;
         foreach (Surface s in surfaces)
         {
-            res += s.name + MessageSeparators.L1
-                + CommonUtils.convertVectorToStringRPC(s.cBottomLeft) + MessageSeparators.L1
-                + CommonUtils.convertVectorToStringRPC(s.cBottomRight) + MessageSeparators.L1
-                + CommonUtils.convertVectorToStringRPC(s.cTopLeft) + MessageSeparators.L1
+            res += s.name + MessageSeparators.L2
+                + CommonUtils.convertVectorToStringRPC(s.cBottomLeft) + MessageSeparators.L2
+                + CommonUtils.convertVectorToStringRPC(s.cBottomRight) + MessageSeparators.L2
+                + CommonUtils.convertVectorToStringRPC(s.cTopLeft) + MessageSeparators.L2
                 + CommonUtils.convertVectorToStringRPC(s.cTopRight)
                 + MessageSeparators.L1;
         }
