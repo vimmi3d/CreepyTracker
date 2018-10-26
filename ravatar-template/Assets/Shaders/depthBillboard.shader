@@ -16,7 +16,11 @@ Shader "Custom/Depth Billboard"
 		_SigmaX ("SigmaX", Range(-3, 3)) = 0.10
 		_SigmaY ("SigmaY", Range(-3, 3)) = 0.10
 		_Alpha ("Alpha", Range(0,1)) = 0.015
+		
+		_SizeFilter("SizeFilter",Int) = 2
 
+		_sigmaS("SigmaS",Range(0.1,20)) = 8
+		_sigmaL("SigmaL",Range(0.1,20)) = 8
 	}
 
 	SubShader 
@@ -28,6 +32,7 @@ Shader "Custom/Depth Billboard"
 			Cull Off // render both back and front faces
 
 			CGPROGRAM
+
 				#pragma target 5.0
 				#pragma vertex VS_Main
 				#pragma fragment FS_Main
@@ -59,46 +64,148 @@ Shader "Custom/Depth Billboard"
 				sampler2D _ColorTex;				
 				sampler2D _DepthTex; 
 				int _TexScale;
-				float4 _Color; 
+				float4 _Color;
+				
+				int _SizeFilter;
+				
+				float _sigmaL;
+				float _sigmaS;
+
+
+
 
 				// **************************************************************
 				// Shader Programs												*
 				// **************************************************************
+
+
+				int textureToDepth(float x, float y)
+				{
+						float4 d = tex2Dlod(_DepthTex,float4(x, y,0,0));
+						int dr = d.r*255;
+						int dg = d.g*255;
+						int db = d.b*255;
+						int da = d.a*255;
+						int dValue = (int)(db | (dg << 0x8) | (dr << 0x10) | (da << 0x18));
+						return dValue;
+				}
+
+
+				#define EPS 1e-5
+				float bilateralFilterDepth(int depth,float x, float y)
+				{	
+					float sigS = max(_sigmaS, EPS);
+					float sigL = max(_sigmaL, EPS);
+
+					float facS = -1./(2.*sigS*sigS);
+					float facL = -1./(2.*sigL*sigL);
+
+					float sumW = 0.;
+					float4  sumC = float4(0.0,0.0,0.0,0.0);
+					float halfSize = sigS * 2;
+					float2 textureSize2 = float2(512,424);
+					float2 texCoord = float2(x,y);
+					float l = depth;
+				
+					for (float i = -halfSize; i <= halfSize; i ++){
+						for (float j = -halfSize; j <= halfSize; j ++){
+						  float2 pos = float2(i, j);
+						  
+						  float2 coords = texCoord + pos/textureSize2;
+						  int offsetDepth = textureToDepth(coords.x,coords.y);
+						  float distS = length(pos);
+						  float distL = offsetDepth-l;
+
+						  float wS = exp(facS*float(distS*distS));
+						  float wL = exp(facL*float(distL*distL));
+						  float w = wS*wL;
+
+						  sumW += w;
+						  sumC += offsetDepth * w;
+						}
+					}
+					return sumC/sumW;
+				}
+
+				
+				float medianFilterDepth(int depth,float x, float y)
+				{	
+					if(_SizeFilter == 0) return depth;
+					float2 texCoord = float2(x,y);
+					float2 textureSize2 = float2(512,424);
+					int sizeArray = (_SizeFilter*2 + 1)*(_SizeFilter*2 + 1);
+
+					int arr[121];
+
+					int k = 0;
+					for (float i = -_SizeFilter; i <= _SizeFilter; i ++){
+						for (float j = -_SizeFilter; j <= _SizeFilter; j ++){
+						  float2 pos = float2(i, j);
+						  float2 coords = texCoord + pos/textureSize2;
+						  int d = textureToDepth(coords.x,coords.y);
+						  arr[k] = d;
+						  k++;
+						}
+					}
+
+					for (int j = 1; j < sizeArray; ++j)
+					{
+						float key = arr[j];
+						int i = j - 1;
+						while (i >= 0 && arr[i] > key)
+						{
+							arr[i+1] = arr[i];
+							--i;
+						}
+						arr[i+1] = key;
+					}
+					int index = (_SizeFilter*2)+1;
+					return arr[index];
+					//return depth;
+				}
+
+
 
 				// Vertex Shader ------------------------------------------------
 				GS_INPUT VS_Main(appdata_full v)
 				{
 					GS_INPUT output = (GS_INPUT)0;
 
-						float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
-						float4 d = tex2Dlod(_DepthTex,float4(v.vertex.x,v.vertex.y,0,0));
-						int dr = d.r*255;
-						int dg = d.g*255;
-						int db = d.b*255;
-						int da = d.a*255;
-						int dValue = (int)(db | (dg << 0x8) | (dr << 0x10) | (da << 0x18));
-						float4 pos;
-						//if(c.a == 0)
-						//dValue = 2000;
-						pos.z = dValue / 1000.0;
-						int x = 512*v.vertex.x;
-						int y = 424*v.vertex.y;
-						float vertx = float(x);
-						float verty = float(424 -y);
-						pos.x =  pos.z*(vertx- 255.5)/351.001462;
-						pos.y =  pos.z*(verty-  211.5)/351.001462;
-						pos.w = 1;	
+					float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
+					int dValue = textureToDepth(v.vertex.x,v.vertex.y);
+					
+					float4 pos;
+					//Median
+					dValue = medianFilterDepth(dValue,v.vertex.x,v.vertex.y);
+					//float dValue2 =  dValue / 1000.0;
+					
+					//Bilateral
+					float dValue2 = bilateralFilterDepth(dValue,v.vertex.x,v.vertex.y)/1000.0;
+					
+					
+					pos.z = dValue2; 
+					
+					float x = 512*v.vertex.x;
+					float y = 424*v.vertex.y;
+					float vertx = float(x);
+					float verty = float(424 -y);
+					pos.x =  pos.z*(vertx- 255.5)/351.001462;
+					pos.y =  pos.z*(verty-  211.5)/351.001462;
+					pos.w = 1;	
 
-						if(dValue == 0)		
-							c.a = 0;
+					if(dValue == 0)		
+						c.a = 0;
 					output.pos =  pos;
 					output.color = c;
+					//int intpart;
+					//float dColor = modf(dValue2,intpart);
+					//output.color = float4(dColor,dColor,dColor,1);
 
 					return output;
 				}
 
 
-
+			
 				// Geometry Shader -----------------------------------------------------
 				[maxvertexcount(4)]
 				void GS_Main(point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
@@ -120,8 +227,8 @@ Shader "Custom/Depth Billboard"
 					//float3 right = cross(up, look);
 					
 					
-					float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
-					//float size = 0.014;
+					//float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
+					float size = 0.008;
 					float halfS = 0.5f * size;
 
 					if(p[0].color.a != 0){

@@ -692,7 +692,7 @@ public class Tracker : MonoBehaviour
 			s.lastCloud.hide ();
 		}
 		UdpClient udp = new UdpClient ();
-		string message = CloudMessage.createRequestMessage (2,Network.player.ipAddress, TrackerProperties.Instance.listenPort); 
+		string message = CloudMessage.createRequestMessage (2, IPManager.GetIP(ADDRESSFAM.IPv4), TrackerProperties.Instance.listenPort); 
 		byte[] data = Encoding.UTF8.GetBytes(message);
 		IPEndPoint remoteEndPoint = new IPEndPoint(IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
 		udp.Send(data, data.Length, remoteEndPoint);
@@ -702,7 +702,7 @@ public class Tracker : MonoBehaviour
 	public void broadCastCloudRequests (bool continuous)
 	{
 		UdpClient udp = new UdpClient ();
-		string message = CloudMessage.createRequestMessage (continuous ? 1 : 0, Network.player.ipAddress, TrackerProperties.Instance.listenPort); 
+		string message = CloudMessage.createRequestMessage (continuous ? 1 : 0, IPManager.GetIP(ADDRESSFAM.IPv4), TrackerProperties.Instance.listenPort); 
 		byte[] data = Encoding.UTF8.GetBytes (message);
 		IPEndPoint remoteEndPoint = new IPEndPoint (IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
 		udp.Send (data, data.Length, remoteEndPoint);

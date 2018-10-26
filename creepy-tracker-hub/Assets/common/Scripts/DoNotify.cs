@@ -109,7 +109,7 @@ public class DoNotify : MonoBehaviour {
 	
 	public void notifySend(NotificationLevel level, string title, string content, int activeTimeMilliseconds)
 	{
-		Texture t = new Texture();
+		Texture t = new Texture2D(64,64);  
 		if (level == NotificationLevel.IMPORTANT) 
 		{
 			t = importantTex;	
