@@ -19,8 +19,10 @@ Shader "Custom/Depth Billboard"
 		
 		_SizeFilter("SizeFilter",Int) = 2
 
-		_sigmaS("SigmaS",Range(0.1,20)) = 8
-		_sigmaL("SigmaL",Range(0.1,20)) = 8
+		_sigmaS("SigmaS",Range(0.1,20)) = 3
+		_sigmaL("SigmaL",Range(0.1,20)) = 3
+
+		[Toggle] _calculateNormals("Normals", Float) = 0
 	}
 
 	SubShader 
@@ -46,6 +48,7 @@ Shader "Custom/Depth Billboard"
 				{
 					float4	pos		: POSITION;
 					float4 color	: COLOR;
+					float4 n		: NORMAL;
 				};
 
 				struct FS_INPUT
@@ -65,7 +68,7 @@ Shader "Custom/Depth Billboard"
 				sampler2D _DepthTex; 
 				int _TexScale;
 				float4 _Color;
-				
+				float _calculateNormals;
 				int _SizeFilter;
 				
 				float _sigmaL;
@@ -92,8 +95,9 @@ Shader "Custom/Depth Billboard"
 
 
 				#define EPS 1e-5
-				float bilateralFilterDepth(int depth,float x, float y)
+				float bilateralFilterDepth(float depth, float x, float y)
 				{	
+					if(_sigmaS ==0 || _sigmaL ==0) return depth;
 					float sigS = max(_sigmaS, EPS);
 					float sigL = max(_sigmaL, EPS);
 
@@ -164,7 +168,26 @@ Shader "Custom/Depth Billboard"
 					//return depth;
 				}
 
+				float4 estimateNormal(float x, float y)
+				{
+					int width = 512;
+					int height = 424;
+					float yScale = 0.1;
+					float xzScale = 1;
+					float deltax =  1.0/width;
+					float deltay = 1.0/height;
+					float sx = textureToDepth(x< width-deltax ? x+deltax : x, y) -textureToDepth(x>0 ? x-deltax : x, y);
+					if (x == 0 || x == width-deltax)
+						sx *= 2;
 
+					float sy = textureToDepth(x, y<height-deltay ? y+deltay : y) - textureToDepth(x, y>0 ?  y-deltay : y);
+					if (y == 0 || y == height -deltay)
+						sy *= 2;
+
+					float4 n =  float4(-sx*yScale, sy*yScale,2*xzScale,1);
+					n = normalize(n);
+					return n;
+				}
 
 				// Vertex Shader ------------------------------------------------
 				GS_INPUT VS_Main(appdata_full v)
@@ -173,6 +196,11 @@ Shader "Custom/Depth Billboard"
 
 					float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
 					int dValue = textureToDepth(v.vertex.x,v.vertex.y);
+					
+					if(dValue == 0)	{
+						output.color = float4(0,0,0,0);
+						return output;
+						}
 					
 					float4 pos;
 					//Median
@@ -193,14 +221,21 @@ Shader "Custom/Depth Billboard"
 					pos.y =  pos.z*(verty-  211.5)/351.001462;
 					pos.w = 1;	
 
-					if(dValue == 0)		
-						c.a = 0;
+					
 					output.pos =  pos;
 					output.color = c;
 					//int intpart;
 					//float dColor = modf(dValue2,intpart);
 					//output.color = float4(dColor,dColor,dColor,1);
-
+					if(_calculateNormals != 0)
+					{
+						output.n = estimateNormal(v.vertex.x,v.vertex.y);
+					}
+					else
+					{
+						output.n= float4(0,0,0,0);
+					}
+					//output.color = output.n;
 					return output;
 				}
 
@@ -210,12 +245,26 @@ Shader "Custom/Depth Billboard"
 				[maxvertexcount(4)]
 				void GS_Main(point GS_INPUT p[1], inout TriangleStream<FS_INPUT> triStream)
 				{
-					
+					if(p[0].color.a == 0) return;
 					
 					//float3 look = _WorldSpaceCameraPos - p[0].pos;	
 					
+					
 					float3 up =UNITY_MATRIX_IT_MV[1].xyz;
 					float3 right = UNITY_MATRIX_IT_MV[0].xyz;
+					if(_calculateNormals == 1){
+						float nx = p[0].n.x;
+						float ny = p[0].n.y;
+						float nz = p[0].n.z;
+						float n = sqrt(pow(nx,2) + pow(ny,2) + pow(nz,2));
+					
+						float h1 = max( nx - n , nx + n );
+						float h2 = ny;
+						float h3 = nz;
+						float h = sqrt(pow(h1,2) + pow(h2,2) + pow(h3,2));
+						right = float3(-2*h1*h2/pow(h,2), 1 - 2*pow(h2,2)/pow(h,2), -2*h2*h3/pow(h,2));
+						up = float3(-2*h1*h3/pow(h,2), -2*h2*h3/pow(h,2), 1 - 2*pow(h3,2)/pow(h,2));
+					}
 
 					//if(abs(look.y) > abs(look.x) || abs(look.y) > abs(look.z))
 					//	up = float3(1,0,0);
@@ -227,40 +276,40 @@ Shader "Custom/Depth Billboard"
 					//float3 right = cross(up, look);
 					
 					
-					//float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
-					float size = 0.008;
+					float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
+					//float size = 0.008;
 					float halfS = 0.5f * size;
 
-					if(p[0].color.a != 0){
+					
 							
-						float4 v[4];
-						v[0] = float4(p[0].pos + halfS * right - halfS * up, 1.0f);
-						v[1] = float4(p[0].pos + halfS * right + halfS * up, 1.0f);
-						v[2] = float4(p[0].pos - halfS * right - halfS * up, 1.0f);
-						v[3] = float4(p[0].pos - halfS * right + halfS * up, 1.0f);
+					float4 v[4];
+					v[0] = float4(p[0].pos + halfS * right - halfS * up, 1.0f);
+					v[1] = float4(p[0].pos + halfS * right + halfS * up, 1.0f);
+					v[2] = float4(p[0].pos - halfS * right - halfS * up, 1.0f);
+					v[3] = float4(p[0].pos - halfS * right + halfS * up, 1.0f);
 
-						//float4 vp = UnityObjectToClipPos(unity_WorldToObject);
-						FS_INPUT pIn;
-						pIn.pos = UnityObjectToClipPos(v[0]);
-						pIn.tex0 = float2(1.0f, 0.0f);
-						pIn.color = p[0].color;
-						triStream.Append(pIn);
+					//float4 vp = UnityObjectToClipPos(unity_WorldToObject);
+					FS_INPUT pIn;
+					pIn.pos = UnityObjectToClipPos(v[0]);
+					pIn.tex0 = float2(1.0f, 0.0f);
+					pIn.color = p[0].color;
+					triStream.Append(pIn);
 
-						pIn.pos = UnityObjectToClipPos(v[1]);
-						pIn.tex0 = float2(1.0f, 1.0f);
-						pIn.color = p[0].color;
-						triStream.Append(pIn);
+					pIn.pos = UnityObjectToClipPos(v[1]);
+					pIn.tex0 = float2(1.0f, 1.0f);
+					pIn.color = p[0].color;
+					triStream.Append(pIn);
 
-						pIn.pos = UnityObjectToClipPos(v[2]);
-						pIn.tex0 = float2(0.0f, 0.0f);
-						pIn.color = p[0].color;
-						triStream.Append(pIn);
+					pIn.pos = UnityObjectToClipPos(v[2]);
+					pIn.tex0 = float2(0.0f, 0.0f);
+					pIn.color = p[0].color;
+					triStream.Append(pIn);
 
-						pIn.pos = UnityObjectToClipPos(v[3]);
-						pIn.tex0 = float2(0.0f, 1.0f);
-						pIn.color = p[0].color;
-						triStream.Append(pIn);
-					}
+					pIn.pos = UnityObjectToClipPos(v[3]);
+					pIn.tex0 = float2(0.0f, 1.0f);
+					pIn.color = p[0].color;
+					triStream.Append(pIn);
+					
 				}
 
 				float theta1;

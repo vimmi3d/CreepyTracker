@@ -16,6 +16,12 @@ public class PointCloudDepth : MonoBehaviour
     int _texScale;
     int _width;
     int _height;
+
+    public float sigmaS = 3;
+    public float sigmaT = 3;
+    public int medianFilterSize = 2;
+    public bool calculateNormals = true;
+
     void Start()
     {
         _width = 512;
@@ -149,6 +155,10 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetInt("_TexScale", _texScale);
             mr.material.SetTexture("_ColorTex", _colorTex);
             mr.material.SetTexture("_DepthTex", _depthTex);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetInt("_SizeFilter", medianFilterSize);
+            mr.material.SetInt("_calculateNormals", calculateNormals? 1:0);
 
         }
 
