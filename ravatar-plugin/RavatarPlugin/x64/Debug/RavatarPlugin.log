@@ -1,0 +1,21 @@
+﻿  RVLDecoder.cpp
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\rvldecoder.cpp(107): warning C4101: 'bytesRead': unreferenced local variable
+  PCPlugin.cpp
+  GLM: rotate function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: rotate_slow function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: perspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: perspectiveFov function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: infinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+  GLM: tweakedInfinitePerspective function taking degrees as a parameter is deprecated. #define GLM_FORCE_RADIANS before including GLM headers to remove this message.
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\pcplugin.cpp(196): warning C4101: 'f': unreferenced local variable
+  lodepng.cpp
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\lodepng.cpp(3845): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\lodepng.cpp(4900): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+  FFDecoder.cpp
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\ffdecoder.cpp(73): warning C4305: 'return': truncation from 'int' to 'bool'
+  CloudNetworkReader.cpp
+c:\users\rafae\documents\github\creepytracker\ravatar-plugin\ravatarplugin\cloudnetworkreader.cpp(22): warning C4101: 'f': unreferenced local variable
+  CloudLocalReader.cpp
+  Generating Code...
+     Creating library C:\Users\rafae\Documents\GitHub\CreepyTracker\ravatar-plugin\x64\Debug\RavatarPlugin.lib and object C:\Users\rafae\Documents\GitHub\CreepyTracker\ravatar-plugin\x64\Debug\RavatarPlugin.exp
+LINK : fatal error LNK1561: entry point must be defined

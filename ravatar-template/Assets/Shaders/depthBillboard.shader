@@ -70,7 +70,7 @@ Shader "Custom/Depth Billboard"
 				float4 _Color;
 				float _calculateNormals;
 				int _SizeFilter;
-				
+				bool _swapBR;
 				float _sigmaL;
 				float _sigmaS;
 
@@ -196,7 +196,7 @@ Shader "Custom/Depth Billboard"
 
 					float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
 					int dValue = textureToDepth(v.vertex.x,v.vertex.y);
-					
+					dValue = 5000;
 					if(dValue == 0)	{
 						output.color = float4(0,0,0,0);
 						return output;
@@ -209,8 +209,7 @@ Shader "Custom/Depth Billboard"
 					
 					//Bilateral
 					float dValue2 = bilateralFilterDepth(dValue,v.vertex.x,v.vertex.y)/1000.0;
-					
-					
+	
 					pos.z = dValue2; 
 					
 					float x = 512*v.vertex.x;
@@ -220,7 +219,6 @@ Shader "Custom/Depth Billboard"
 					pos.x =  pos.z*(vertx- 255.5)/351.001462;
 					pos.y =  pos.z*(verty-  211.5)/351.001462;
 					pos.w = 1;	
-
 					
 					output.pos =  pos;
 					output.color = c;
@@ -236,6 +234,7 @@ Shader "Custom/Depth Billboard"
 						output.n= float4(0,0,0,0);
 					}
 					//output.color = output.n;
+					
 					return output;
 				}
 

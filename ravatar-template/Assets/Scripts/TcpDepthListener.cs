@@ -62,9 +62,7 @@ public class TcpDepthListener : MonoBehaviour
         myLock = new object();
         //_threads = new List<Thread>();
 
-
         _depthStreams = new List<DepthStream>();
-
         TcpListeningPort = TrackerProperties.Instance.listenPort;
         _server = new TcpListener(IPAddress.Any, TcpListeningPort);
 
@@ -245,7 +243,7 @@ public class TcpDepthListener : MonoBehaviour
             
             if (k.dirty)
             {
-                gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
+              //  gameObject.GetComponent<Tracker>().setNewDepthCloud(k.name, k.colorData,k.depthData, k.lastID,k.compressed,k.sizec,k.scale);
                 k.dirty = false;
             }
             

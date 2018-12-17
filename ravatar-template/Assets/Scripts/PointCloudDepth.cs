@@ -164,4 +164,27 @@ public class PointCloudDepth : MonoBehaviour
 
     }
 
+    public void setPointsUncompressed(byte[] colorBytes, byte[] depthBytes)
+    {
+       
+        _depthTex.LoadRawTextureData(depthBytes);
+        _colorTex.LoadRawTextureData(colorBytes);
+
+        _colorTex.Apply();
+        _depthTex.Apply();
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            MeshRenderer mr = renderers[i];
+            mr.material.SetInt("_TexScale", _texScale);
+            mr.material.SetTexture("_ColorTex", _colorTex);
+            mr.material.SetTexture("_DepthTex", _depthTex);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetInt("_SizeFilter", medianFilterSize);
+            mr.material.SetInt("_calculateNormals", calculateNormals ? 1 : 0);
+        }
+
+    }
+
 }
