@@ -318,17 +318,21 @@
     <Compile Include="Assets\Scripts\MouseOrbitImproved.cs" />
     <Compile Include="Assets\Scripts\MoveCamera.cs" />
     <Compile Include="Assets\Scripts\PointCloudDepth.cs" />
+    <Compile Include="Assets\Scripts\PointCloudMesh.cs" />
     <Compile Include="Assets\Scripts\PointCloudSimple.cs" />
     <Compile Include="Assets\Scripts\RVLDecoder.cs" />
     <Compile Include="Assets\Scripts\TcpDepthListener.cs" />
     <Compile Include="Assets\Scripts\TcpKinectListener.cs" />
     <Compile Include="Assets\Scripts\Tracker.cs" />
+    <Compile Include="Assets\Scripts\TrackerMesh.cs" />
     <Compile Include="Assets\Scripts\TrackerProperties.cs" />
     <Compile Include="Assets\Scripts\UdpListener.cs" />
+    <Compile Include="Assets\Scripts\UdpListenerMesh.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\VertexColor.shader" />
     <None Include="Assets\Shaders\depthBillboard.shader" />
+    <None Include="Assets\Shaders\meshSimple.shader" />
     <None Include="Assets\Shaders\simpleBillboard.shader" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\configSettings.txt" />

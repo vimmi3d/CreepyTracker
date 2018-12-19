@@ -341,6 +341,7 @@
   <ItemGroup>
     <None Include="Assets\Shaders\VertexColor.shader" />
     <None Include="Assets\Shaders\depthBillboard.shader" />
+    <None Include="Assets\Shaders\meshSimple.shader" />
     <None Include="Assets\Shaders\simpleBillboard.shader" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\configSettings.txt" />
