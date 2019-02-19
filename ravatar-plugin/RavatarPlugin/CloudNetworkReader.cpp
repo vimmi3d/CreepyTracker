@@ -12,6 +12,7 @@ CloudNetworkReader::CloudNetworkReader(int w, int h): CloudReader(w, h)
 
 CloudNetworkReader::~CloudNetworkReader()
 {
+
 }
 
 stringstream sstream;
@@ -19,14 +20,16 @@ void CloudNetworkReader::DecompressPNG(byte* in, byte* out)
 {
 	unsigned int w, h;
 	unsigned char *outbuf;
-	lodepng_decode32(&outbuf, &w, &h, in, sizec);
-	for (int i = 0; i < w*h * 4; i+=4) 
-	{
-		byte r = *(outbuf + i);
-		*(outbuf + i) = *(outbuf + i + 2);
-		*(outbuf + i + 2) = r;
+	//if decode doesn't die, we copy and change rgb to bgr
+	if(lodepng_decode32(&outbuf, &w, &h, in, sizec) == 0){
+		for (int i = 0; i < w*h * 4; i+=4) 
+		{
+			byte r = *(outbuf + i);
+			*(outbuf + i) = *(outbuf + i + 2);
+			*(outbuf + i + 2) = r;
+		}
+		memcpy(out, outbuf,w*h*4);
 	}
-	memcpy(out, outbuf,w*h*4);
 }
 
 stringstream ss;

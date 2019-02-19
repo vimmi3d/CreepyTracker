@@ -27,7 +27,10 @@ bool CloudLocalReader::getFrame(byte * colorFrame, byte * depthFrame, byte * nor
 	bool gotFrame = colorStream->getVideoFrame();
 	if (normalStream != NULL) normalStream->getVideoFrame();
 	depthStream->DecompressRVL(width*height);
-
+	FILE *f;
+	fopen_s(&f, "getFrame", "w");
+	fprintf(f, "got frame yay %d\n", gotFrame ? 1 : 0);
+	fclose(f);
 	//Copy
 	av_image_copy_to_buffer(colorFrame, sizec, (const uint8_t * const *)colorStream->_gl_frame->data, colorStream->_gl_frame->linesize, MY_AV_PIXEL_TYPE, width, height, 1);
 	depthFrame = (byte*)memcpy(depthFrame, depthStream->_depthBuffer, sized);

@@ -44,7 +44,7 @@ public class TrackerMesh : MonoBehaviour
         //////////LOCAL
         //IntPtr output = initLocal("C:\\Users\\rafae\\Desktop\\Data TEST\\output.ini");
         //string calib = Marshal.PtrToStringAnsi(output);
-        //processCalibration(calib);
+        //processCalibrationMatrix(calib);
 
         ////////////NETWORK
         _loadConfig();
@@ -96,6 +96,35 @@ public class TrackerMesh : MonoBehaviour
     {
         print("Started TCP Layer with " + _cloudGameObjects.Count);
         initNetwork(TrackerProperties.Instance.listenPort,_cloudGameObjects.Count);
+    }
+
+    public void processCalibrationMatrix(string calibration)
+    {
+        string[] tokens = calibration.Split(MessageSeparators.L1);
+        foreach (string s in tokens)
+        {
+            if (s == "") break;
+            string[] chunks = s.Split(';');
+            string id = chunks[0];
+
+            Matrix4x4 mat = new Matrix4x4(new Vector4(float.Parse(chunks[1]), float.Parse(chunks[5]), float.Parse(chunks[9]), float.Parse(chunks[13])),
+           new Vector4(float.Parse(chunks[2]), float.Parse(chunks[6]), float.Parse(chunks[10]), float.Parse(chunks[14])),
+           new Vector4(float.Parse(chunks[3]), float.Parse(chunks[7]), float.Parse(chunks[11]), float.Parse(chunks[15])),
+           new Vector4(float.Parse(chunks[4]), float.Parse(chunks[8]), float.Parse(chunks[12]), float.Parse(chunks[16])));
+
+            GameObject cloudobj = new GameObject(id);
+            cloudobj.transform.localPosition = new Vector3(mat[0, 3], mat[1, 3], mat[2, 3]);
+            cloudobj.transform.localRotation = mat.rotation;
+            cloudobj.transform.localScale = new Vector3(-1, 1, 1);
+            cloudobj.AddComponent<PointCloudDepth>();
+
+            PointCloudMesh cloud = cloudobj.GetComponent<PointCloudMesh>();
+            _clouds.Add(id, cloud);
+            _cloudGameObjects.Add(id, cloudobj);
+        }
+        if (_cloudGameObjects.Count > 0)
+            Camera.main.GetComponent<MouseOrbitImproved>().target = _cloudGameObjects.First().Value.transform;
+
     }
 
     public void processCalibration(string calibration)

@@ -12,10 +12,10 @@ Shader "Custom/Depth Billboard"
 		_DepthTex ("TextureD", 2D) = "white" {}
 
 		_Dev ("Dev", Range(-5, 5)) = 0
-		_Gamma ("Gamma", Range(0, 6)) =3.41
+		_Gamma ("Gamma", Range(0, 6)) =2.41
 		_SigmaX ("SigmaX", Range(-3, 3)) = 0.10
 		_SigmaY ("SigmaY", Range(-3, 3)) = 0.10
-		_Alpha ("Alpha", Range(0,1)) = 0.015
+		_Alpha ("Alpha", Range(0,10)) = 0.015
 		
 		_SizeFilter("SizeFilter",Int) = 2
 
@@ -32,7 +32,8 @@ Shader "Custom/Depth Billboard"
 			Tags { "RenderType"="Transparent" }
 			
 			Cull Off // render both back and front faces
-
+			Blend Off 
+	
 			CGPROGRAM
 
 				#pragma target 5.0
@@ -56,6 +57,7 @@ Shader "Custom/Depth Billboard"
 					float4	pos		: POSITION;
 					float2  tex0	: TEXCOORD0;
 					float4 color	: COLOR;
+					float3 thetas	: TANGENT;
 				};
 
 
@@ -74,7 +76,9 @@ Shader "Custom/Depth Billboard"
 				float _sigmaL;
 				float _sigmaS;
 
-
+				#define PI3 1.04719755 
+				#define PI6 0.523598776
+				#define PI12 0.261799388
 
 
 				// **************************************************************
@@ -84,13 +88,13 @@ Shader "Custom/Depth Billboard"
 
 				int textureToDepth(float x, float y)
 				{
-						float4 d = tex2Dlod(_DepthTex,float4(x, y,0,0));
-						int dr = d.r*255;
-						int dg = d.g*255;
-						int db = d.b*255;
-						int da = d.a*255;
-						int dValue = (int)(db | (dg << 0x8) | (dr << 0x10) | (da << 0x18));
-						return dValue;
+					float4 d = tex2Dlod(_DepthTex,float4(x, y,0,0));
+					int dr = d.r*255;
+					int dg = d.g*255;
+					int db = d.b*255;
+					int da = d.a*255;
+					int dValue = (int)(db | (dg << 0x8) | (dr << 0x10) | (da << 0x18));
+					return dValue;
 				}
 
 
@@ -178,11 +182,11 @@ Shader "Custom/Depth Billboard"
 					float deltay = 1.0/height;
 					float sx = textureToDepth(x< width-deltax ? x+deltax : x, y) -textureToDepth(x>0 ? x-deltax : x, y);
 					if (x == 0 || x == width-deltax)
-						sx *= 2;
+						sx *= 2.5;
 
 					float sy = textureToDepth(x, y<height-deltay ? y+deltay : y) - textureToDepth(x, y>0 ?  y-deltay : y);
 					if (y == 0 || y == height -deltay)
-						sy *= 2;
+						sy *= 2.5;
 
 					float4 n =  float4(-sx*yScale, sy*yScale,2*xzScale,1);
 					n = normalize(n);
@@ -196,8 +200,7 @@ Shader "Custom/Depth Billboard"
 
 					float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
 					int dValue = textureToDepth(v.vertex.x,v.vertex.y);
-					dValue = 5000;
-					if(dValue == 0)	{
+					if(dValue == 0 || c.a == 0)	{
 						output.color = float4(0,0,0,0);
 						return output;
 						}
@@ -219,7 +222,7 @@ Shader "Custom/Depth Billboard"
 					pos.x =  pos.z*(vertx- 255.5)/351.001462;
 					pos.y =  pos.z*(verty-  211.5)/351.001462;
 					pos.w = 1;	
-					
+					c.a = 1;
 					output.pos =  pos;
 					output.color = c;
 					//int intpart;
@@ -238,7 +241,9 @@ Shader "Custom/Depth Billboard"
 					return output;
 				}
 
-
+				  float rand(float2 myVector)  {
+					 return frac(sin( dot(myVector ,float2(12.9898,78.233) )) * 43758.5453);
+				 }
 			
 				// Geometry Shader -----------------------------------------------------
 				[maxvertexcount(4)]
@@ -274,7 +279,18 @@ Shader "Custom/Depth Billboard"
 					right = normalize(right);
 					//float3 right = cross(up, look);
 					
-					
+					float theta1 = fmod(rand(float2(p[0].pos.x,p[0].pos.x))*1000,PI3)-PI6;
+					float theta2 = fmod(rand(float2(p[0].pos.y,p[0].pos.y))*1000,PI3)-PI6;
+					float theta3 = 0;
+
+					if(abs(theta2-theta1)> PI6){
+						theta2 = theta1 < 0? theta1+PI6:theta1-PI6;
+					}
+					theta3 = fmod(rand(float2(p[0].pos.z,p[0].pos.z))*1000,PI3)-PI6;
+					if(abs(theta3-theta2)> PI6){
+						theta3 = theta2 < 0? theta2+PI6:theta2-PI6;
+					} 
+
 					float size = _TexScale * (p[0].pos.z*_Size)/351.00146192;
 					//float size = 0.008;
 					float halfS = 0.5f * size;
@@ -289,6 +305,7 @@ Shader "Custom/Depth Billboard"
 
 					//float4 vp = UnityObjectToClipPos(unity_WorldToObject);
 					FS_INPUT pIn;
+					pIn.thetas = float4(theta1,theta2,theta3,1);
 					pIn.pos = UnityObjectToClipPos(v[0]);
 					pIn.tex0 = float2(1.0f, 0.0f);
 					pIn.color = p[0].color;
@@ -347,27 +364,44 @@ Shader "Custom/Depth Billboard"
 
 					//ycenters and xcenters
 					
-					float alpha = gaussianTheta(uv.x, 0.5,uv.y,0.5,0.017,0.5,0.5,2,0);
+					//float alpha = gaussianTheta(uv.x, 0.5,uv.y,0.5,0.017,0.5,0.5,2,0);
+				
+					float xc[9]= {0.25f,0.5f,0.75f,0.25f,0.5f,0.75f,0.25f,0.5f,0.75f};
+					float yc[9]= {0.25f,0.25f,0.25f,0.5f,0.5f,0.5f,0.75f,0.75f,0.75f};
+					//float a =1.0f;
+					//float sigmax = 0.15f; float sigmay = 0.12f;
+					// float gamma =4;
+					// float dev = 0.12;
+					float alpha = 0;
 
-					
+					float a1 =gaussianTheta(uv.x, xc[0],uv.y,yc[0]+_Dev-theta1/6,_Alpha,_SigmaX,_SigmaY,_Gamma,theta1);
+					float a2 =gaussianTheta(uv.x, xc[1],uv.y,yc[1]+_Dev-theta2/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta2); 
+					float a3 =gaussianTheta(uv.x, xc[2],uv.y,yc[2]+_Dev-theta3/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta3); 
+					float a4 =gaussianTheta(uv.x, xc[3],uv.y,yc[3]-theta1/6,_Alpha,_SigmaX,_SigmaY,_Gamma,theta1);
+					float a5 =gaussianTheta(uv.x, xc[4],uv.y,yc[4]-theta2/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta2);
+					float a6 =gaussianTheta(uv.x, xc[5],uv.y,yc[5]-theta3/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta3);
+					float a7 =gaussianTheta(uv.x, xc[6],uv.y,yc[6]-_Dev-theta1/6,_Alpha,_SigmaX,_SigmaY,_Gamma,theta1);
+					float a8 =gaussianTheta(uv.x, xc[7],uv.y,yc[7]-_Dev-theta2/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta2);
+					float a9 =gaussianTheta(uv.x, xc[8],uv.y,yc[8]-_Dev-theta3/6,_Alpha*0.9,_SigmaX,_SigmaY,_Gamma,theta3);
+	
+					//alpha = max(max(max(max(max(max(max(max(a1,a2),a3),a4),a5),a6),a7),a8),a9);
+					alpha= a1+a2+a3+a4+a5+a6+a7+a8+a9;
+
 					
 					//----------------------------------//
 
 					alpha = alpha>1? 1:alpha;
-					alpha = alpha < 1? alpha*1:alpha;
-					alpha = alpha < 0.01? 0:alpha;
+					//alpha = alpha < 1? alpha*1:alpha;
+					alpha = alpha < 0.05? 0:alpha;
 					float4 t = float4(1.0f,1.0f,1.0f,alpha);
 					float3 normal;
-					if(t.a ==0 && !aBuffer){
+					if(t.a ==0 )
 						discard;
-					}if(t.a ==0 && aBuffer){
-						return float4(0.0f,0.0f,0.0f,0.0f);
-					}
 					t = t*input.color;
 					//if(aBuffer)
 				//		t.a *= _Alpha;
 				//	else
-						t.a = _Alpha;
+					//	t.a = _Alpha;
 					float  P=sqrt(t.r*t.r*0.299+t.g*t.g*0.587+t.b*t.b*0.114 ) ;
 
 					//float  P=sqrt(t.r) ;
@@ -375,9 +409,9 @@ Shader "Custom/Depth Billboard"
 					t.r=P+((t.r)-P)*(saturation+0.3);
 					t.g=P+((t.g)-P)*(saturation+0.3);
 					t.b=P+((t.b)-P)*(saturation+0.3); 
-
+				//	t.a = 1;
 					return  t;
-
+					
 				}
 
 			ENDCG

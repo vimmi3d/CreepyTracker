@@ -6,16 +6,6 @@
 #include <sstream>
 
 
-vector<string> split(const std::string &s, char delim) {
-	vector<string> elems;
-	std::stringstream ss(s);
-	std::string item;
-	while (std::getline(ss, item, delim)) {
-		elems.push_back(item);
-	}
-	return elems;
-}
-
 const char* InitFromDisk(const char* filename) {
 	
 
@@ -38,7 +28,7 @@ const char* InitFromDisk(const char* filename) {
 		ss.swap(ssempty);
 		ss << i;
 		string calib = pt.get<std::string>(ss.str());
-		ssout << calib << "#";
+		ssout << ss.str() << ";"<< calib << "#";
 	}	
 	
 	for (int i = 0; i < layerNum; i++)
@@ -88,7 +78,6 @@ void AcceptClients(int tcpPort,int clients)
 		boost::shared_ptr<tcp::socket> sock(new tcp::socket(io_service));
 		acceptor.accept(*sock);
 		boost::thread t(boost::bind(TCPLupe, sock));
-		threadsGroup.add_thread(&t);
 		threads.push_back(&t);
 		clients--;
 	}
@@ -162,7 +151,7 @@ void TCPLoop(boost::shared_ptr<tcp::socket> socket)
 			if (colorFrame) {
 
 				cloud->result_mutex.lock();
-				if (cloud == NULL || cloud->colorBuffer == NULL || cloud->colorNetworkBuffer == NULL || cloud->depthNetworkBuffer == NULL || cloud->depthBuffer == NULL) break;
+				if (cloud == NULL || cloud->colorBuffer == NULL || cloud->colorNetworkBuffer == NULL || cloud->depthNetworkBuffer == NULL || cloud->depthBuffer == NULL || !running) break;
 				std::swap(cloud->colorNetworkBuffer, cloud->colorBuffer);
 				std::swap(cloud->depthNetworkBuffer, cloud->depthBuffer);
 				cloud->result_mutex.unlock();
@@ -259,12 +248,13 @@ void TCPLupe(boost::shared_ptr<tcp::socket> socket)
 
 			if (colorFrame) {
 
+				if (cloud == NULL || cloud->colorBuffer == NULL || cloud->colorNetworkBuffer == NULL || cloud->depthNetworkBuffer == NULL || cloud->depthBuffer == NULL || !running) break;
 				cloud->result_mutex.lock();
-				if (cloud == NULL || cloud->colorBuffer == NULL || cloud->colorNetworkBuffer == NULL || cloud->depthNetworkBuffer == NULL || cloud->depthBuffer == NULL) break;
 				std::swap(cloud->colorNetworkBuffer, cloud->colorBuffer);
 				std::swap(cloud->depthNetworkBuffer, cloud->depthBuffer);
-				cloud->result_mutex.unlock();
+				
 				cloud->dirty = true;
+				cloud->result_mutex.unlock();
 
 			}
 
@@ -272,6 +262,7 @@ void TCPLupe(boost::shared_ptr<tcp::socket> socket)
 		}
 	}
 	socket->close();
+	delete cloud;
 }
 
 void getNextFrame(const char* cloudID, byte* colorFrame, byte* depthFrame, byte* normalFrame)
@@ -288,17 +279,12 @@ void close() {
 	if(network)
 	{
 		running = false;
-		threadsGroup.join_all();
+		for (const auto& t : threads)
+		{
+			t->join();
+		}
+		threads.clear();
 	}
 
-	for (const auto& sm_pair : clouds)
-	{
-		delete sm_pair.second;
-	}
 	clouds.clear();
-	for (const auto& t : threads) 
-	{
-		threadsGroup.remove_thread(t);
-	}
-	threads.clear();
 }

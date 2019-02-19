@@ -23,10 +23,8 @@ const char L1 = '#'; // top level separator -> bodies
 const char L2 = '/'; // -> body attributes
 const char L3 = ':'; // -> 3D values
 const char SET = '=';
-const int max_length_udp = 1024;
 
 map<string, CloudReader*> clouds;
-boost::thread_group threadsGroup;
 vector<boost::thread*> threads;
 
 int vidWidth;

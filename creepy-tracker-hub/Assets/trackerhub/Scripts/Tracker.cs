@@ -706,7 +706,7 @@ public class Tracker : MonoBehaviour
 		byte[] data = Encoding.UTF8.GetBytes (message);
 		IPEndPoint remoteEndPoint = new IPEndPoint (IPAddress.Broadcast, TrackerProperties.Instance.sensorListenPort);
 		udp.Send (data, data.Length, remoteEndPoint);
-        Debug.Log("Requested clouds to port " + TrackerProperties.Instance.listenPort);
+        Debug.Log("Requested clouds to port " + TrackerProperties.Instance.sensorListenPort);
 
     }
 
