@@ -39,6 +39,8 @@ public:
 	bool getVideoFrame();
 	bool init();
 	~FFDecoder();
-
+	bool seekFrame(int frame);
+	int getTotalFrames();
+	int getCurrentFrame();
 };
 

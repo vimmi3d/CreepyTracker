@@ -104,7 +104,6 @@ FFDecoder::~FFDecoder()
 }
 
 
-
 bool FFDecoder::getVideoFrame() {
 	
 	do {
@@ -128,7 +127,6 @@ bool FFDecoder::getVideoFrame() {
 						_codec_ctx->width, _codec_ctx->height, MY_AV_PIXEL_TYPE,
 						SWS_BICUBIC, NULL, NULL, NULL);
 				}
-				
 				int ret = sws_scale(_conv_ctx, _av_frame->data, _av_frame->linesize, 0,
 					_codec_ctx->height, _gl_frame->data, _gl_frame->linesize);
 			}
@@ -139,4 +137,23 @@ bool FFDecoder::getVideoFrame() {
 	} while (_packet->stream_index != _stream_idx);
 
 	return true;
+}
+
+bool FFDecoder::seekFrame(int frame) 
+{
+	if (av_seek_frame(_fmt_ctx, -1, frame, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_ANY) >= 0)
+		return true;
+	
+	return false;
+	
+}
+
+int FFDecoder::getTotalFrames()
+{
+	return _video_stream->nb_frames;
+}
+
+int FFDecoder::getCurrentFrame()
+{
+	return _av_frame->display_picture_number;
 }

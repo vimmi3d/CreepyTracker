@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -13,7 +14,9 @@ private:
 	byte _sizeBuffer[4];
 	int _width, _height;
 	string _inputPath;
-	
+	vector<DWORD> _FrameIndex;
+	bool prepared;
+
 public:
 	RVLDecoder();
 	virtual ~RVLDecoder();
@@ -27,5 +30,5 @@ public:
 	void	ResetDecoder();
 	void	DecompressRVL( int numPixels);
 	void	DecompressRVLInOut(byte* in, byte* out, int numPixels);
-
+	bool	seekFrame(int frame);
 };

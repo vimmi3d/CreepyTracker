@@ -19,17 +19,40 @@ bool RVLDecoder::InitDecoder(int width, int height, string inputPath) {
 		std::wstring stempb = std::wstring(inputPath.begin(), inputPath.end());
 		LPCWSTR swb = stempb.c_str();
 		_inFile = CreateFileW(swb,GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if(_input == NULL){
+		if(_input == NULL)
 			_input = (byte*)malloc(sizeof(short)*width*height);
+		if(_depthBuffer == NULL)
+			_depthBuffer = (byte*)malloc(sizeof(byte)*width*height*4);
+	
+		if(!prepared){
+			DWORD bytesRead;
+			byte* output = _depthBuffer;
+
+			ReadFile(_inFile, _sizeBuffer, 4, &bytesRead, NULL);
+
+			long index = 0;
+			long i = 0;
+			while (bytesRead != 0)
+			{
+				_FrameIndex.push_back(index);
+
+				int size = (_sizeBuffer[0] << 24) | (_sizeBuffer[1] << 16) | (_sizeBuffer[2] << 8) | (_sizeBuffer[3]);
+				index += 4 + size;
+				SetFilePointer(_inFile, index, NULL, FILE_BEGIN);
+				ReadFile(_inFile, _sizeBuffer, 4, &bytesRead, NULL);
+				//if(i % 30 == 0) yield return null;
+			}
+			SetFilePointer(_inFile, 0, NULL, FILE_BEGIN);
 		}
-		_depthBuffer = (byte*)malloc(sizeof(byte)*width*height*4);
 	}
+
 	return true;
 }
 
+	
+
 void RVLDecoder::ResetDecoder() {
-	CloseHandle(_inFile);
-	InitDecoder(_width, _height, _inputPath);
+	SetFilePointer(_inFile, 0, NULL, FILE_BEGIN);
 }
 
 int RVLDecoder::DecodeVLE()
@@ -61,8 +84,8 @@ void RVLDecoder::DecompressRVL(int numPixels)
 	
 	ReadFile(_inFile, _sizeBuffer, 4, &bytesRead, NULL);
 	if (bytesRead == 0) {
-		ResetDecoder();
-		ReadFile(_inFile, _sizeBuffer, 4, &bytesRead, NULL);
+		return;
+		//ReadFile(_inFile, _sizeBuffer, 4, &bytesRead, NULL);
 	}
 	int size = (_sizeBuffer[0] << 24) | (_sizeBuffer[1] << 16) | (_sizeBuffer[2] << 8) | (_sizeBuffer[3]);
 
@@ -141,4 +164,14 @@ void RVLDecoder::DecompressRVLInOut(byte* in, byte* out, int numPixels)
 
 	}
 
+}
+
+bool RVLDecoder::seekFrame(int frame)
+{
+	if (frame > _FrameIndex.size())
+		return false;
+
+	SetFilePointer(_inFile, _FrameIndex[frame], NULL, FILE_BEGIN);
+	
+	return true;
 }

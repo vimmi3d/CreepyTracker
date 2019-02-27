@@ -16,6 +16,8 @@ public:
 	int width;
 	int height;
 	virtual bool getFrame(byte* colorFrame, byte* depthFrame, byte* normalFrame) = 0;
-
+	virtual bool skip5sec() = 0;
+	virtual bool back5sec() = 0;
+	virtual bool resetStreams() = 0;
 };
 

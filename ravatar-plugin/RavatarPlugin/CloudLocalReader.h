@@ -15,5 +15,11 @@ public:
 	RVLDecoder* depthStream;
 
 	bool getFrame(byte* colorFrame, byte* depthFrame, byte* normalFrame);
+	bool skip5sec();
+	bool back5sec();
+	bool resetStreams();
+
+private:
+	int currentFrame;
 };
 

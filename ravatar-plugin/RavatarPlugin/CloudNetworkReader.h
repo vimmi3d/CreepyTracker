@@ -19,6 +19,8 @@ public:
 	bool getFrame(byte* colorFrame, byte* depthFrame, byte* normalFrame);
 	void DecompressPNG(byte* in, byte* out);
 	boost::mutex result_mutex;
-
+	bool skip5sec() { return false; }
+	bool back5sec() { return false; }
+	bool resetStreams() { return false; }
 };
 
