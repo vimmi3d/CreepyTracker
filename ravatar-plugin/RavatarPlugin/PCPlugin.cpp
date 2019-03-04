@@ -288,3 +288,28 @@ void close() {
 
 	clouds.clear();
 }
+
+void skip5()
+{
+	map<string, CloudReader*>::iterator it;
+	for (it = clouds.begin(); it != clouds.end(); it++) {
+		it->second->skip5sec();
+	}
+
+}
+
+void goBack5() 
+{
+	map<string, CloudReader*>::iterator it;
+	for (it = clouds.begin(); it != clouds.end(); it++) {
+		it->second->back5sec();
+	}
+}
+
+void resetAll() 
+{
+	map<string, CloudReader*>::iterator it;
+	for (it = clouds.begin(); it != clouds.end(); it++) {
+		it->second->resetStreams();
+	}
+}

@@ -42,7 +42,9 @@ vector<string> split(const std::string &s, char delim);
 void AcceptClients(int tcpPort, int clients);
 void TCPLoop(boost::shared_ptr<tcp::socket> socket);
 void TCPLupe(boost::shared_ptr<tcp::socket> socket);
-
+void skip5();
+void goBack5();
+void resetAll();
 
 extern "C" {
 		RAVATARDLL_API void initNetwork(int myPort, int numberOfClients)
@@ -68,4 +70,18 @@ extern "C" {
 			close();
 		}
 	
+		RAVATARDLL_API void skip5seconds()
+		{
+			skip5();
+		}
+
+		RAVATARDLL_API void back5seconds()
+		{
+			goBack5();
+		}
+
+		RAVATARDLL_API void resetStreams()
+		{
+			resetAll();
+		}
 }

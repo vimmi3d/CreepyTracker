@@ -1,4 +1,5 @@
 #include "FFDecoder.h"
+#include <sstream>
 
 FFDecoder::FFDecoder(std::string fn)
 {
@@ -17,7 +18,7 @@ FFDecoder::FFDecoder(std::string fn)
 	_gl_frame = NULL;
 	_conv_ctx = NULL;
 	
-
+	_seekedFrame = -1;
 }
 
 bool FFDecoder::init() {
@@ -103,13 +104,24 @@ FFDecoder::~FFDecoder()
 	//if (_colorBuffer) free(_colorBuffer);
 }
 
+std::stringstream ssdebug;
 
 bool FFDecoder::getVideoFrame() {
 	
 	do {
-		if (av_read_frame(_fmt_ctx, _packet) < 0) {
-			av_packet_unref(_packet);
-			return false;
+		
+		
+		if (_seekedFrame != -1) {
+			while (_packet->pts != _seekedFrame) {
+				av_read_frame(_fmt_ctx, _packet);
+			}
+			_seekedFrame = -1;
+		}
+		else {
+			if (av_read_frame(_fmt_ctx, _packet) < 0) {
+				av_packet_unref(_packet);
+				return false;
+			}
 		}
 
 		if (_packet->stream_index == _stream_idx) {
@@ -139,12 +151,15 @@ bool FFDecoder::getVideoFrame() {
 	return true;
 }
 
+
 bool FFDecoder::seekFrame(int frame) 
 {
-	if (av_seek_frame(_fmt_ctx, -1, frame, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_ANY) >= 0)
-		return true;
-	
-	return false;
+	if (av_seek_frame(_fmt_ctx, -1, frame, AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD) < 0)
+		return false;
+	avcodec_flush_buffers(_codec_ctx);
+	_seekedFrame = frame;
+
+	return true;
 	
 }
 

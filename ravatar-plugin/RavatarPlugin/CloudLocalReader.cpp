@@ -55,9 +55,11 @@ bool CloudLocalReader::skip5sec()
 	if(!colorStream->seekFrame(seekFrame))
 		return false;
 
+	
 	if(!depthStream->seekFrame(seekFrame))
 		return false;
 	
+	currentFrame = seekFrame;
 	return true;
 }
 
@@ -71,6 +73,7 @@ bool CloudLocalReader::back5sec()
 	colorStream->seekFrame(seekFrame);
 	depthStream->seekFrame(seekFrame);
 	
+	currentFrame = seekFrame;
 	return true;
 }
 

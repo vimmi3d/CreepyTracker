@@ -20,6 +20,12 @@ public class Tracker : MonoBehaviour
     private static extern bool getFrameAndNormal(string cloudID, byte[] colorFrame, byte[] depthFrame, byte[] normalFrame);
     [DllImport("RavatarPlugin")]
     private static extern void stopClouds();
+    [DllImport("RavatarPlugin")]
+    private static extern void skip5seconds();
+    [DllImport("RavatarPlugin")]
+    private static extern void back5seconds();
+    [DllImport("RavatarPlugin")]
+    private static extern void resetStreams();
 
     private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
@@ -56,6 +62,29 @@ public class Tracker : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
+            {
+                skip5seconds();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
+            {
+                back5seconds();   
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
+            {
+                resetStreams();
+            }
+        }
         foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
         {
             if(getFrameAndNormal(p.Key, _colorData, _depthData, null)) { 
@@ -63,6 +92,8 @@ public class Tracker : MonoBehaviour
                 _clouds[p.Key].show();
             }
         }
+
+        
         
     }
 

@@ -30,7 +30,7 @@ private:
 	//AVFrame *_gl_frame;
 	struct SwsContext *_conv_ctx;
 	std::string filename;
-
+	int _seekedFrame;
 
 public:
 	FFDecoder(std::string fn);
