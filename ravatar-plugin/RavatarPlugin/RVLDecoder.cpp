@@ -45,7 +45,7 @@ bool RVLDecoder::InitDecoder(int width, int height, string inputPath) {
 			SetFilePointer(_inFile, 0, NULL, FILE_BEGIN);
 		}
 	}
-
+	_currentFrame = 0;
 	return true;
 }
 
@@ -53,6 +53,7 @@ bool RVLDecoder::InitDecoder(int width, int height, string inputPath) {
 
 void RVLDecoder::ResetDecoder() {
 	SetFilePointer(_inFile, 0, NULL, FILE_BEGIN);
+	_currentFrame = 0;
 }
 
 int RVLDecoder::DecodeVLE()
@@ -121,7 +122,7 @@ void RVLDecoder::DecompressRVL(int numPixels)
 		}
 		
 	}
-
+	_currentFrame++;
 }
 
 void RVLDecoder::DecompressRVLInOut(byte* in, byte* out, int numPixels)
@@ -163,7 +164,7 @@ void RVLDecoder::DecompressRVLInOut(byte* in, byte* out, int numPixels)
 		}
 
 	}
-
+	_currentFrame++;
 }
 
 bool RVLDecoder::seekFrame(int frame)
@@ -172,6 +173,14 @@ bool RVLDecoder::seekFrame(int frame)
 		return false;
 
 	SetFilePointer(_inFile, _FrameIndex[frame], NULL, FILE_BEGIN);
-	
+	_currentFrame = frame;
 	return true;
+}
+
+float RVLDecoder::getCurrentTime() {
+	return _currentFrame * (1.0 / 30.0);
+}
+
+float RVLDecoder::getTotalTime() {
+	return _FrameIndex.size() * (1.0 / 30.0);
 }

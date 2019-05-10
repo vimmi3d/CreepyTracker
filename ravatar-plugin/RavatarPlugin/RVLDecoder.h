@@ -16,6 +16,7 @@ private:
 	string _inputPath;
 	vector<DWORD> _FrameIndex;
 	bool prepared;
+	int _currentFrame;
 
 public:
 	RVLDecoder();
@@ -31,4 +32,6 @@ public:
 	void	DecompressRVL( int numPixels);
 	void	DecompressRVLInOut(byte* in, byte* out, int numPixels);
 	bool	seekFrame(int frame);
+	float	getCurrentTime();
+	float	getTotalTime();
 };

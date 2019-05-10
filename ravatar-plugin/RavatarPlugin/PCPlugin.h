@@ -42,6 +42,8 @@ vector<string> split(const std::string &s, char delim);
 void AcceptClients(int tcpPort, int clients);
 void TCPLoop(boost::shared_ptr<tcp::socket> socket);
 void TCPLupe(boost::shared_ptr<tcp::socket> socket);
+float totalTime();
+float currentTime();
 void skip5();
 void goBack5();
 void resetAll();
@@ -83,5 +85,14 @@ extern "C" {
 		RAVATARDLL_API void resetStreams()
 		{
 			resetAll();
+		}
+
+		RAVATARDLL_API float getTime()
+		{
+			return currentTime();
+		}
+		RAVATARDLL_API float getDuration()
+		{
+			return totalTime();
 		}
 }

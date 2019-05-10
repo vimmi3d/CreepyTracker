@@ -313,3 +313,21 @@ void resetAll()
 		it->second->resetStreams();
 	}
 }
+
+float currentTime() 
+{
+	if (network) return 0;
+	if(clouds.size() > 0){
+		CloudLocalReader* lr = (CloudLocalReader*)clouds.begin()->second;
+		return lr->depthStream->getCurrentTime();
+	}
+}
+
+float totalTime()
+{
+	if (network) return 0;
+	if (clouds.size() > 0) {
+		CloudLocalReader* lr = (CloudLocalReader*)clouds.begin()->second;
+		return lr->depthStream->getTotalTime();
+	}
+}

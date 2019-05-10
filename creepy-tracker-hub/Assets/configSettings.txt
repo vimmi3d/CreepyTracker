@@ -1,7 +1,7 @@
-%Config File created in 2018-12-13 11:45:46
-udp.listenport=4002
-udp.broadcastport=4003
-udp.sensor.listener=4005
-udp.sendinterval=50
+%Config File created in 2019-05-10 14:28:34
+udp.listenport=5002
+udp.broadcastport=5003
+udp.sensor.listener=5001
+udp.sendinterval=33
 tracker.mergedistance=0.3
 tracker.confidencethreshold=10

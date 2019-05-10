@@ -604,7 +604,30 @@ public class Tracker : MonoBehaviour
 		}
 	}
 
-	private void _loadConfig ()
+    public void _saveConfigNoSensors()
+    {
+        string filePath = Application.dataPath + "/" + TrackerProperties.Instance.configFilename;
+        ConfigProperties.clear(filePath);
+
+        ConfigProperties.writeComment(filePath, "Config File created in " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+
+        // save properties
+        ConfigProperties.save(filePath, "udp.listenport", "" + TrackerProperties.Instance.listenPort);
+        ConfigProperties.save(filePath, "udp.broadcastport", "" + TrackerProperties.Instance.broadcastPort);
+        ConfigProperties.save(filePath, "udp.sensor.listener", "" + TrackerProperties.Instance.sensorListenPort);
+        ConfigProperties.save(filePath, "udp.sendinterval", "" + TrackerProperties.Instance.sendInterval);
+        ConfigProperties.save(filePath, "tracker.mergedistance", "" + TrackerProperties.Instance.mergeDistance);
+        ConfigProperties.save(filePath, "tracker.confidencethreshold", "" + TrackerProperties.Instance.confidenceTreshold);
+
+        foreach(Sensor s in _sensors.Values)
+        {
+            Destroy(s.SensorGameObject);
+        }
+        _sensors.Clear();
+        
+    }
+
+    private void _loadConfig ()
 	{
 		string filePath = Application.dataPath + "/" + TrackerProperties.Instance.configFilename;
 

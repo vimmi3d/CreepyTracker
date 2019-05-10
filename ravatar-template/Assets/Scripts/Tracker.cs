@@ -26,6 +26,10 @@ public class Tracker : MonoBehaviour
     private static extern void back5seconds();
     [DllImport("RavatarPlugin")]
     private static extern void resetStreams();
+    [DllImport("RavatarPlugin")]
+    private static extern float getTime();
+    [DllImport("RavatarPlugin")]
+    private static extern float getDuration();
 
     private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
@@ -48,14 +52,14 @@ public class Tracker : MonoBehaviour
         _depthData = new byte[DBUFFER];
 
         //////////LOCAL
-        IntPtr output = initLocal("C:\\Users\\rafae\\Desktop\\Data TEST\\output.ini");
-        string calib = Marshal.PtrToStringAnsi(output);
-        processCalibrationMatrix(calib);
+        //IntPtr output = initLocal("D:\\Pedro Clouds\\Output4\\Pedro4.ini");
+        //string calib = Marshal.PtrToStringAnsi(output);
+        //processCalibrationMatrix(calib);
 
-        ////////////NETWORK
-        //_loadConfig();
-        //this.gameObject.AddComponent<UdpListener>().udpRestart();
-        //broadCastCloudMessage(START);
+        //////////NETWORK
+        _loadConfig();
+        this.gameObject.AddComponent<UdpListener>().udpRestart();
+        broadCastCloudMessage(START);
 
     }
 
@@ -93,8 +97,8 @@ public class Tracker : MonoBehaviour
             }
         }
 
-        
-        
+        print(getTime() + " " + getDuration());
+
     }
 
     public void hideAllClouds ()

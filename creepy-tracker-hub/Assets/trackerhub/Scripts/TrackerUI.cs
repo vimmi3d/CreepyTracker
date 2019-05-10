@@ -176,9 +176,17 @@ public class TrackerUI : MonoBehaviour
 			}
 			GUI.Label (new Rect (left + 40, top, 100, 25), "Smooth points");
 
-            top += 60;
-            GUI.Label(new Rect(left, top, 500, 35), "Surfaces: ", _titleStyle);
+            top += 30;
+            if (GUI.Button(new Rect(left, top, 150, 35), "Reset Calibration"))
+            {
+                _userTracker._saveConfigNoSensors();
+                DoNotify n = gameObject.GetComponent<DoNotify>();
+                n.notifySend(NotificationLevel.INFO, "Config", "Reset calibration ",2000);
+            }
             top += 40;
+
+            GUI.Label(new Rect(left, top, 500, 35), "Surfaces: ", _titleStyle);
+            top += 25;
             if (GUI.Button(new Rect(left, top, 150, 35), "Load Surfaces"))
             {
                 _userTracker.LoadSurfaces();
@@ -214,7 +222,9 @@ public class TrackerUI : MonoBehaviour
 				if (GUI.Button (new Rect (left + 140, top, 60, 20), "Save"))
                 {
 					_userTracker.Save ();
-				}
+                    DoNotify n = gameObject.GetComponent<DoNotify>();
+                    n.notifySend(NotificationLevel.INFO, "Config", "Saved calibration ", 2000);
+                }
 				top += 45;
 
 				List<string> keyList = new List<string> (_userTracker.Sensors.Keys);
@@ -315,7 +325,7 @@ public class TrackerUI : MonoBehaviour
 			top = iconSize + iconSize / 2;
 			left = Screen.width - 250;
 
-			GUI.Box (new Rect (left, top - 10, 240, 150), "");
+			GUI.Box (new Rect (left, top - 10, 240, 185), "");
 			left += 10;
 
 			GUI.Label (new Rect (left, top, 200, 25), "Broadcast Settings:", _titleStyle);
@@ -338,22 +348,38 @@ public class TrackerUI : MonoBehaviour
 			top += 35;
 
 			left = Screen.width - 250 + 20;
-			GUI.Label (new Rect (left, top, 150, 25), "Broadcast port:");
+			GUI.Label (new Rect (left, top, 150, 25), "Sensor req. port:");
 			left += 100;
 
-			TrackerProperties.Instance.broadcastPort = int.Parse (GUI.TextField (new Rect (left, top, 50, 20), "" + TrackerProperties.Instance.broadcastPort));
+			TrackerProperties.Instance.sensorListenPort = int.Parse (GUI.TextField (new Rect (left, top, 50, 20), "" + TrackerProperties.Instance.sensorListenPort));
 			left += 55;
 			if (GUI.Button (new Rect (left, top, 50, 25), "Reset"))
             {
-				_userTracker.resetBroadcast ();
 				_userTracker.Save ();
 
 				DoNotify n = gameObject.GetComponent<DoNotify> ();
-				n.notifySend (NotificationLevel.INFO, "Udp Broadcast", "Sending to port " + TrackerProperties.Instance.broadcastPort, 2000);
+				n.notifySend (NotificationLevel.INFO, "Udp Requests", "Sending to port " + TrackerProperties.Instance.sensorListenPort, 2000);
 			}
 
 			top += 35;
-			left = Screen.width - 250 + 20;
+
+            left = Screen.width - 250 + 20;
+            GUI.Label(new Rect(left, top, 150, 25), "Broadcast port:");
+            left += 100;
+
+            TrackerProperties.Instance.broadcastPort = int.Parse(GUI.TextField(new Rect(left, top, 50, 20), "" + TrackerProperties.Instance.broadcastPort));
+            left += 55;
+            if (GUI.Button(new Rect(left, top, 50, 25), "Reset"))
+            {
+                _userTracker.resetBroadcast();
+                _userTracker.Save();
+
+                DoNotify n = gameObject.GetComponent<DoNotify>();
+                n.notifySend(NotificationLevel.INFO, "Udp Broadcast", "Sending to port " + TrackerProperties.Instance.broadcastPort, 2000);
+            }
+
+            top += 35;
+            left = Screen.width - 250 + 20;
 			GUI.Label (new Rect (left, top, 150, 25), "Packets / sec:");
 			left += 100;
 			packetsPerSec = int.Parse (GUI.TextField (new Rect (left, top, 50, 20), "" + packetsPerSec));
