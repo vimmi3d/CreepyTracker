@@ -11,22 +11,15 @@ namespace Microsoft.Samples.Kinect.BodyBasics
 
         private UdpClient _udpClient = null;
         private IPEndPoint _anyIP;
-        private int _port;
         public uint messageCount;
-        int limit; // TMA: To keep track of the number of bytes sent.
-        byte[] final_bytes; // TMA: To point to the bytes that will be send.
         public List<CloudMessage> PendingRequests;
         public List<TcpSender> Clients;
 
-        public int Port
-        {
-            get { return _port; }
-            set { _port = value; }
-        }
+        public int Port { get; set; }
 
         public UdpListener(int port)
         {
-            _port = port;
+            Port = port;
             PendingRequests = new List<CloudMessage>();
             Clients = new List<TcpSender>();
         }
@@ -38,16 +31,16 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             }
 
             PendingRequests = new List<CloudMessage>();
-            _anyIP = new IPEndPoint(IPAddress.Any, _port);
+            _anyIP = new IPEndPoint(IPAddress.Any, Port);
             _udpClient = new UdpClient(_anyIP);
             _udpClient.BeginReceive(new AsyncCallback(this.ReceiveCallback), null);
 
-            Console.WriteLine("[UDPListener] Receiving in port: " + _port);
+            Console.WriteLine("[UDPListener] Receiving in port: " + Port);
         }
 
         public void ReceiveCallback(IAsyncResult ar)
         {
-            Console.WriteLine("[UDPListener] Received request: " + _port);
+            Console.WriteLine("[UDPListener] Received request: " + Port);
             try
             { 
                 Byte[] receiveBytes = _udpClient.EndReceive(ar, ref _anyIP);

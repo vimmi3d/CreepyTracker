@@ -98,6 +98,7 @@ public class PointCloudDepth : MonoBehaviour
         mfinal.mesh = new Mesh();
         mfinal.mesh.vertices = points.ToArray();
         mfinal.mesh.SetIndices(ind.ToArray(), MeshTopology.Points, 0);
+        mfinal.mesh.bounds = new Bounds(new Vector3(0, 0, 4.5f), new Vector3(5, 5, 5));
         afinal.transform.parent = this.gameObject.transform;
         afinal.transform.localPosition = Vector3.zero;
         afinal.transform.localRotation = Quaternion.identity;
@@ -160,6 +161,29 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetInt("_SizeFilter", medianFilterSize);
             mr.material.SetInt("_calculateNormals", calculateNormals? 1:0);
 
+        }
+
+    }
+
+    public void setPointsUncompressed(byte[] colorBytes, byte[] depthBytes)
+    {
+       
+        _depthTex.LoadRawTextureData(depthBytes);
+        _colorTex.LoadRawTextureData(colorBytes);
+
+        _colorTex.Apply();
+        _depthTex.Apply();
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            MeshRenderer mr = renderers[i];
+            mr.material.SetInt("_TexScale", _texScale);
+            mr.material.SetTexture("_ColorTex", _colorTex);
+            mr.material.SetTexture("_DepthTex", _depthTex);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetFloat("_sigmaS", sigmaS);
+            mr.material.SetInt("_SizeFilter", medianFilterSize);
+            mr.material.SetInt("_calculateNormals", calculateNormals ? 1 : 0);
         }
 
     }

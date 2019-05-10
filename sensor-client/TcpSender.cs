@@ -17,11 +17,13 @@ namespace Microsoft.Samples.Kinect.BodyBasics
         private int _port;
         private byte[] sendHeaderBuffer;
         private ASCIIEncoding _encoder;
+        private byte[] ackbuf;
 
         public TcpSender()
         {
             _connected = false;
             sendHeaderBuffer = new byte[13];
+            ackbuf = new byte[3];
         }
 
         public void connect(string address, int port)
@@ -67,9 +69,26 @@ namespace Microsoft.Samples.Kinect.BodyBasics
             Array.Copy(s, 0, sendHeaderBuffer, 9, 4);
             write(sendHeaderBuffer,13);
             write(frame,size);
-
+           // confirm();
         }
 
+        public void confirm()
+        {
+            if (_connected)
+            {
+                byte[] ok;
+                try
+                {
+                    _stream.Read(ackbuf,0,3);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    close();
+                    _connected = false;
+                }
+            }
+        }
 
         public void write(byte[] frame,int size)
         {

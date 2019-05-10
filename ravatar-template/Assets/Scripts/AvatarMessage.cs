@@ -6,7 +6,7 @@ public class AvatarMessage {
 
    public List<string> calibrations;
 
-    public AvatarMessage(string message, byte[] receivedBytes)
+    public AvatarMessage(string message)
     {
         calibrations = new List<string>();
         string[] chunks = message.Split(MessageSeparators.L1);

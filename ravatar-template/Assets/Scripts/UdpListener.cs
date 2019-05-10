@@ -24,14 +24,8 @@ public class UdpListener : MonoBehaviour {
     private List<byte[]> _stringsToParse; // TMA: Store the bytes from the socket instead of converting to strings. Saves time.
     private byte[] _receivedBytes;
     private int number = 0;
-    CloudMessage message;
 
 
-
-    void Start()
-    {
-        message = new CloudMessage();
-    }
 
     public void udpRestart()
     {
@@ -73,8 +67,8 @@ public class UdpListener : MonoBehaviour {
                         Debug.Log("Got Calibration Message! ");
                         string stringToParse = Encoding.ASCII.GetString(toProcess);
                         string[] splitmsg = stringToParse.Split(MessageSeparators.L0);
-                        AvatarMessage av = new AvatarMessage(splitmsg[1], toProcess);
-                        gameObject.GetComponent<Tracker>().processAvatarMessage(av);
+                        gameObject.GetComponent<Tracker>().processCalibration(splitmsg[1]);
+                        gameObject.GetComponent<Tracker>().initTCPLayer();
                     }
                 }
                 _stringsToParse.RemoveAt(0);
