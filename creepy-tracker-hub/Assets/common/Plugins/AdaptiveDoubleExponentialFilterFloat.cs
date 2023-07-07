@@ -2,7 +2,7 @@
 
 public class AdaptiveDoubleExponentialFilterFloat
 {
-	// as described in: msdn.microsoft.com/en-us/library/jj131429.aspx
+	// as described in: https://learn.microsoft.com/en-us/previous-versions/windows/kinect-1.8/jj131429(v=ieb.10)
 
 	private static float deltaLow = 0.02f;
 	private static float deltaHigh = 0.05f;
